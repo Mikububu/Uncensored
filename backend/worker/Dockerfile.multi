@@ -1,0 +1,35 @@
+# Multi-model worker Dockerfile with ComfyUI
+FROM pytorch/pytorch:2.1.0-cuda12.1-cudnn8-runtime
+
+# System dependencies
+RUN apt-get update && apt-get install -y \
+    git \
+    libgl1-mesa-glx \
+    libglib2.0-0 \
+    wget \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Python dependencies
+RUN pip install --upgrade pip
+RUN pip install runpod pillow numpy requests
+
+# Clone and setup ComfyUI
+WORKDIR /comfyui
+RUN git clone https://github.com/comfyanonymous/ComfyUI.git . && \
+    pip install --no-cache-dir -r requirements.txt
+
+# Create model directories
+RUN mkdir -p models/checkpoints models/vae models/loras models/upscale_models
+
+# Set working directory for handler
+WORKDIR /app
+
+# Copy handler code
+COPY handler_multi.py handler.py
+
+# Copy model config (if available)
+RUN mkdir -p /app/config
+COPY config/models.json /app/config/models.json 2>/dev/null || echo "{}" > /app/config/models.json
+
+# Command to run the worker
+CMD [ "python", "-u", "handler.py" ]

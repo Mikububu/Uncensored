@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagnostic Page</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            padding: 2rem;
+            background: #f0f9ff;
+        }
+
+        .box {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+        }
+
+        button:hover {
+            background: #2563eb;
+        }
+
+        #log {
+            margin-top: 20px;
+            padding: 10px;
+            background: #1e293b;
+            color: #4ade80;
+            font-family: monospace;
+            min-height: 100px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="box">
+        <h1>🔍 Diagnostic Check</h1>
+        <p>Click the button below to test if JavaScript is working.</p>
+        <button id="testBtn" onclick="runTest()">Test Browser Interaction</button>
+        <div id="log">Waiting for input...</div>
+    </div>
+
+    <script>
+        function log(msg) {
+            const el = document.getElementById('log');
+            const entry = document.createElement('div');
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+            el.appendChild(entry);
+        }
+
+        function runTest() {
+            log("✅ Button Clicked!");
+            log("✅ JavaScript is executing.");
+            log("✅ DOM manipulation works.");
+            alert("Success! Your browser is working correctly.");
+        }
+
+        // Auto-run startup check
+        log("🚀 Diagnostic Page Loaded.");
+    </script>
+</body>
+
+</html>

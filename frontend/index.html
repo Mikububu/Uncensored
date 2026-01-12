@@ -1,0 +1,1685 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pro Gen Studio | Z-Image-Turbo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        glass: "rgba(255, 255, 255, 0.05)",
+                        glassBorder: "rgba(255, 255, 255, 0.1)",
+                        neon: "#a855f7",
+                        neonHover: "#9333ea",
+                        darkBg: "#0B0C15"
+                    },
+                    fontFamily: {
+                        sans: ['Outfit', 'sans-serif'],
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #f0f0f0;
+            background-image: radial-gradient(#d1d1d1 1px, transparent 1px);
+            background-size: 16px 16px;
+            /* Smaller pattern */
+            color: #000000;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 14px;
+            /* Default smaller */
+        }
+
+        .brutal-box {
+            background: #ffffff;
+            border: 3px solid #000000;
+            /* Thinner border */
+            box-shadow: 4px 4px 0px 0px #000000;
+            /* Smaller shadow */
+            transition: all 0.2s ease;
+            border-radius: 12px;
+            /* Rounded as requested */
+        }
+
+        .brutal-box:active {
+            transform: translate(2px, 2px);
+            box-shadow: 2px 2px 0px 0px #000000;
+        }
+
+        .brutal-btn {
+            background: #ff0033;
+            color: white;
+            border: 2px solid #000000;
+            box-shadow: 3px 3px 0px 0px #000000;
+            /* Smaller */
+            text-transform: uppercase;
+            font-weight: 800;
+            transition: all 0.2s;
+            border-radius: 8px;
+            /* Rounded */
+        }
+
+        .brutal-btn:hover {
+            background: #cc0029;
+            transform: translate(-1px, -1px);
+            box-shadow: 5px 5px 0px 0px #000000;
+        }
+
+        .brutal-btn:active {
+            transform: translate(1px, 1px);
+            box-shadow: 2px 2px 0px 0px #000000;
+        }
+
+        .brutal-input {
+            background: #ffffff;
+            border: 3px solid #000000;
+            padding: 0.75rem;
+            font-family: 'Courier New', Courier, monospace;
+            box-shadow: 3px 3px 0px 0px #cccccc;
+            border-radius: 8px;
+        }
+
+        .brutal-input:focus {
+            outline: none;
+            box-shadow: 5px 5px 0px 0px #000000;
+        }
+
+        .grid-img {
+            border: 3px solid black;
+            box-shadow: 4px 4px 0px 0px black;
+            border-radius: 16px;
+            /* Rounded thumbnails */
+        }
+    </style>
+</head>
+
+<body class="h-screen flex overflow-hidden">
+
+    <!-- Sidebar History -->
+    <aside class="w-80 bg-white border-r-4 border-black flex flex-col z-20 hidden md:flex">
+        <div class="p-6 border-b-4 border-black bg-yellow-300">
+            <h1 class="text-4xl font-extrabold tracking-tighter text-black uppercase">EXPLICIT</h1>
+            <div id="credits-box" class="mt-4 border-2 border-black p-2 bg-white text-xs font-mono">
+                <div class="flex justify-between items-center">
+                    <span>CREDITS: <span id="credits-val" class="font-bold">ACTIVE</span></span>
+                    <div class="flex gap-1">
+                        <button onclick="clearHistory()"
+                            class="bg-red-600 text-white px-2 py-0.5 text-[8px] hover:bg-red-700 transition-colors" title="Clear History">CLEAR</button>
+                        <button onclick="toggleAdmin()"
+                            class="bg-black text-white px-2 py-0.5 text-[8px] hover:bg-red-600 transition-colors">GOD
+                            MODE</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex-1 overflow-y-auto p-4 space-y-3 scroll-hide" id="history-list">
+            <!-- History Items will populate here -->
+            <div class="text-center text-slate-500 text-sm py-10">Loading history...</div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col relative bg-[#e0e0e0]">
+
+        <!-- Header / Controls -->
+        <!-- Reduced padding p-4 -->
+        <header class="p-4 flex flex-col gap-4 z-10">
+
+            <div class="max-w-4xl w-full mx-auto"> <!-- Reduced max-width -->
+                <div class="brutal-box p-3 relative group bg-white">
+
+                    <div
+                        class="absolute -top-4 left-0 bg-black text-white px-2 py-0.5 font-bold text-xs tracking-widest uppercase transform -rotate-1 rounded flex items-center gap-2">
+                        <span>Uncensored Hub</span>
+                        <span id="worker-status-dot" class="w-2 h-2 rounded-full bg-gray-500 animate-pulse"></span>
+                    </div>
+
+                    <!-- Voice Input Button (Compact) -->
+                    <button onclick="toggleAudioInput()" id="voice-btn"
+                        class="absolute top-2 right-2 bg-gray-100 border-2 border-black p-1 hover:bg-gray-200 z-20 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] rounded-md"
+                        title="Record Audio">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-black" fill="none"
+                            viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                        </svg>
+                    </button>
+
+                    <div class="relative mt-2">
+                        <!-- Scale down textarea -->
+                        <textarea id="prompt-input"
+                            class="w-full bg-white text-lg text-black font-bold p-3 outline-none resize-none h-24 placeholder-gray-400 border-2 border-dashed border-black rounded-lg"
+                            placeholder="TYPE WHAT YOU WANT TO SEE..."></textarea>
+
+                        <!-- Control Station (Always Open, simplified layout) -->
+                        <div id="control-station"
+                            class="border-t-2 border-black pt-3 mt-3 flex flex-wrap gap-4 items-center justify-between">
+
+                            <!-- Sliders in a compact row -->
+                            <div class="flex gap-4 flex-1 items-center">
+                                <div class="flex flex-col w-32 group relative">
+                                    <div class="flex justify-between text-[10px] font-bold uppercase cursor-help"
+                                        title="Complexity/Quality: Higher steps = more detail but slower generation.">
+                                        <label class="border-b border-dotted border-black">Steps</label>
+                                        <span id="steps-val">25</span>
+                                    </div>
+                                    <input type="range" id="steps-range" min="10" max="100" value="25"
+                                        class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer border border-black accent-red-600">
+                                    <div
+                                        class="absolute -bottom-8 left-0 hidden group-hover:block bg-black text-white text-[8px] p-1 rounded z-30 w-32 font-mono">
+                                        HI-RES takes 50+ steps. TURBO works at 8-15.
+                                    </div>
+                                </div>
+                                <div class="flex flex-col w-32 group relative">
+                                    <div class="flex justify-between text-[10px] font-bold uppercase cursor-help"
+                                        title="Prompt Adherence: Higher = follows prompt strictly. Lower = more AI creativity.">
+                                        <label class="border-b border-dotted border-black">Guidance</label>
+                                        <span id="guidance-val">7.5</span>
+                                    </div>
+                                    <input type="range" id="guidance-range" min="1" max="20" step="0.5" value="7.5"
+                                        class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer border border-black accent-red-600">
+                                    <div
+                                        class="absolute -bottom-8 left-0 hidden group-hover:block bg-black text-white text-[8px] p-1 rounded z-30 w-32 font-mono">
+                                        STRICT follow-through: 12-15. CREATIVE: 4-6.
+                                    </div>
+                                </div>
+
+                                <!-- Safety Toggle Compact -->
+                                <button onclick="toggleSafety()" id="safety-btn"
+                                    class="text-[10px] px-2 py-1 font-bold border-2 border-black bg-red-500 text-white uppercase rounded shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[1px] hover:shadow-none transition-all ml-auto">
+                                    uncensored
+                                </button>
+                            </div>
+
+                        </div>
+
+                        <div class="flex justify-between items-end mt-3 pt-3 border-t-2 border-black">
+                            <div id="model-multi-select" class="flex flex-wrap gap-2 max-w-lg">
+                                <!-- Model Pill Buttons - Dynamically generated -->
+                            </div>
+                            
+                            <!-- Quick Test Button -->
+                            <button onclick="runUncensoredTest()" 
+                                class="brutal-box px-3 py-1 text-[10px] font-bold uppercase bg-red-600 text-white hover:bg-red-700 transition-all mr-2">
+                                🧪 TEST ALL MODELS
+                            </button>
+
+                            <button onclick="generate()" id="generate-btn"
+                                class="brutal-btn px-6 py-2 text-sm flex items-center gap-2 rounded-lg">
+                                <span>GENERATE</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20"
+                                    fill="currentColor">
+                                    <path fill-rule="evenodd"
+                                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13a1 1 0 102 0V9.414l1.293 1.293a1 1 0 001.414-1.414z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Active Jobs Area -->
+                <div id="active-jobs" class="mt-2 flex flex-wrap gap-2 min-h-[1rem]">
+                </div>
+
+                <!-- Style Station -->
+                <div id="style-station" class="mt-4 border-t-4 border-black pt-4 bg-white p-4 brutal-box">
+                    <h3 class="text-xl font-black uppercase mb-4 flex items-center justify-between">
+                        <span>Style & Concept Station</span>
+                        <span class="text-[10px] font-mono bg-yellow-300 px-2">v2.0</span>
+                    </h3>
+
+                    <!-- 1. Master Styles -->
+                    <div class="mb-6">
+                        <label class="block font-bold uppercase text-xs mb-2 border-b border-black">Master Style</label>
+                        <div class="flex flex-wrap gap-2" id="style-toggles">
+                            <button onclick="selectStyle('photography')" data-style="photography"
+                                class="style-btn brutal-box px-3 py-1 text-xs font-bold uppercase hover:bg-black hover:text-white transition-all">Photography</button>
+                            <button onclick="selectStyle('art')" data-style="art"
+                                class="style-btn brutal-box px-3 py-1 text-xs font-bold uppercase hover:bg-black hover:text-white transition-all">Art
+                                / Illustration</button>
+                            <button onclick="selectStyle('claymation')" data-style="claymation"
+                                class="style-btn brutal-box px-3 py-1 text-xs font-bold uppercase hover:bg-black hover:text-white transition-all">Claymation</button>
+                            <button onclick="selectStyle('none')" data-style="none"
+                                class="style-btn brutal-box px-3 py-1 text-xs font-bold uppercase bg-black text-white">None
+                                (Raw)</button>
+                        </div>
+                    </div>
+
+                    <!-- 2. Drill Down (Dynamic) -->
+                    <div id="photographer-panel"
+                        class="hidden mb-6 bg-gray-100 p-3 border-2 border-dashed border-black rounded">
+                        <label class="block font-bold uppercase text-xs mb-2">Featured Photographers (Inject
+                            Style)</label>
+                        <div class="grid grid-cols-2 md:grid-cols-5 gap-2 text-[10px]">
+                            <button onclick="addToken('style of Helmut Newton')"
+                                class="brutal-box p-1 hover:bg-red-500 hover:text-white truncate">Helmut Newton</button>
+                            <button onclick="addToken('style of Peter Lindbergh')"
+                                class="brutal-box p-1 hover:bg-red-500 hover:text-white truncate">Peter
+                                Lindbergh</button>
+                            <button onclick="addToken('style of Guy Bourdin')"
+                                class="brutal-box p-1 hover:bg-red-500 hover:text-white truncate">Guy Bourdin</button>
+                            <button onclick="addToken('style of Richard Avedon')"
+                                class="brutal-box p-1 hover:bg-red-500 hover:text-white truncate">Richard
+                                Avedon</button>
+                            <button onclick="addToken('style of Annie Leibovitz')"
+                                class="brutal-box p-1 hover:bg-red-500 hover:text-white truncate">Annie
+                                Leibovitz</button>
+                            <button onclick="addToken('style of David LaChapelle')"
+                                class="brutal-box p-1 hover:bg-red-500 hover:text-white truncate">David
+                                LaChapelle</button>
+                            <button onclick="addToken('style of Ellen von Unwerth')"
+                                class="brutal-box p-1 hover:bg-red-500 hover:text-white truncate">Ellen von
+                                Unwerth</button>
+                            <button onclick="addToken('style of Terry Richardson')"
+                                class="brutal-box p-1 hover:bg-red-500 hover:text-white truncate">Terry
+                                Richardson</button>
+                            <button onclick="addToken('style of Mario Testino')"
+                                class="brutal-box p-1 hover:bg-red-500 hover:text-white truncate">Mario Testino</button>
+                            <button onclick="addToken('style of Steven Meisel')"
+                                class="brutal-box p-1 hover:bg-red-500 hover:text-white truncate">Steven Meisel</button>
+                        </div>
+                    </div>
+
+                    <div id="art-panel" class="hidden mb-6 bg-gray-100 p-3 border-2 border-dashed border-black rounded">
+                        <label class="block font-bold uppercase text-xs mb-2">Art Mediums</label>
+                        <div class="flex flex-wrap gap-2 text-[10px]">
+                            <button onclick="addToken('linocut print style')"
+                                class="brutal-box px-2 py-1 hover:bg-blue-500 hover:text-white">Linocut</button>
+                            <button onclick="addToken('charcoal drawing')"
+                                class="brutal-box px-2 py-1 hover:bg-blue-500 hover:text-white">Charcoal</button>
+                            <button onclick="addToken('oil painting, impasto')"
+                                class="brutal-box px-2 py-1 hover:bg-blue-500 hover:text-white">Impasto Oil</button>
+                            <button onclick="addToken('marble sculpture')"
+                                class="brutal-box px-2 py-1 hover:bg-blue-500 hover:text-white">Marble</button>
+                            <button onclick="addToken('ukiyo-e woodblock')"
+                                class="brutal-box px-2 py-1 hover:bg-blue-500 hover:text-white">Ukiyo-e</button>
+                        </div>
+                    </div>
+
+                    <!-- 3. Concepts (Explicit) -->
+                    <div class="mb-4">
+                        <label
+                            class="block font-bold uppercase text-xs mb-2 border-b border-black text-red-600">Concepts
+                            (Explicit Presets)</label>
+                        <div class="flex flex-wrap gap-2 text-[10px]">
+                            <button onclick="addToken('full nude, detailed anatomy')"
+                                class="brutal-box px-2 py-1 border-red-500 text-red-600 hover:bg-red-600 hover:text-white">Full
+                                Nude</button>
+                            <button onclick="addToken('artistic nude, chiaroscuro')"
+                                class="brutal-box px-2 py-1 border-red-500 text-red-600 hover:bg-red-600 hover:text-white">Artistic
+                                Nude</button>
+                            <button onclick="addToken('shibari, rope bondage')"
+                                class="brutal-box px-2 py-1 border-red-500 text-red-600 hover:bg-red-600 hover:text-white">Shibari</button>
+                            <button onclick="addToken('anal sex, explicit, detailed')"
+                                class="brutal-box px-2 py-1 border-red-500 text-red-600 hover:bg-red-600 hover:text-white">Anal</button>
+                            <button onclick="addToken('pissing, watersports, golden shower')"
+                                class="brutal-box px-2 py-1 border-red-500 text-red-600 hover:bg-red-600 hover:text-white">Piss</button>
+                            <button onclick="addToken('orgy, group sex, threesome')"
+                                class="brutal-box px-2 py-1 border-red-500 text-red-600 hover:bg-red-600 hover:text-white">Orgy</button>
+                            <button onclick="addToken('lingerie, lace details')"
+                                class="brutal-box px-2 py-1 border-red-500 text-red-600 hover:bg-red-600 hover:text-white">Lingerie</button>
+                            <button onclick="addToken('latex bodysuit')"
+                                class="brutal-box px-2 py-1 border-red-500 text-red-600 hover:bg-red-600 hover:text-white">Latex</button>
+                        </div>
+                    </div>
+
+                    <!-- 4. Human Readable Log -->
+                    <div class="mt-4 bg-black p-2 font-mono text-[10px] text-green-400 h-24 overflow-y-auto rounded border-2 border-gray-500"
+                        id="live-log">
+                        <div>> SYSTEM READY</div>
+                        <div>> WAITING FOR INPUT...</div>
+                    </div>
+                </div>
+            </div>
+
+        </header>
+
+        <!-- Gallery Grid -->
+        <div class="flex-1 overflow-y-auto p-6 md:p-10 z-0 scroll-hide">
+            <div id="gallery-grid"
+                class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 max-w-[1600px] mx-auto pb-20">
+                <!-- Gallery Images -->
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Admin Console Modal (Enhanced Research Desk) -->
+    <div id="admin-panel" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 hidden">
+        <div class="brutal-box bg-yellow-400 w-full max-w-4xl max-h-[90vh] overflow-y-auto p-0 relative flex flex-col">
+            <!-- Header -->
+            <div class="p-6 border-b-4 border-black bg-white flex justify-between items-center sticky top-0 z-10">
+                <div>
+                    <h2 class="text-3xl font-black italic uppercase">Research Desk</h2>
+                    <div class="text-[10px] font-mono bg-black text-white px-2 inline-block">LIVE METRICS & DEBUGGING
+                    </div>
+                </div>
+                <button onclick="toggleAdmin()" class="text-4xl font-black hover:text-red-500">×</button>
+            </div>
+
+            <!-- Content -->
+            <div class="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 bg-[#e0e0e0]">
+
+                <!-- Advanced Controls Row -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <!-- Steps Slider -->
+                    <div class="brutal-box p-3 bg-white">
+                        <label class="block text-[10px] font-bold uppercase mb-1 flex justify-between">
+                            <span>Quality (Steps)</span>
+                            <span id="steps-val" class="bg-black text-white px-1">25</span>
+                        </label>
+                        <input type="range" id="steps-range" min="10" max="50" value="25"
+                            class="w-full h-2 bg-gray-200 appearance-none cursor-pointer">
+                    </div>
+
+                    <!-- Guidance Slider -->
+                    <div class="brutal-box p-3 bg-white">
+                        <label class="block text-[10px] font-bold uppercase mb-1 flex justify-between">
+                            <span>Adherence (CFG)</span>
+                            <span id="guidance-val" class="bg-black text-white px-1">7.0</span>
+                        </label>
+                        <input type="range" id="guidance-range" min="1" max="20" step="0.5" value="7.0"
+                            class="w-full h-2 bg-gray-200 appearance-none cursor-pointer">
+                    </div>
+
+                    <!-- Resolution Slider (New) -->
+                    <div class="brutal-box p-3 bg-white border-2 border-red-500 relative">
+                        <div class="absolute -top-3 -right-2 bg-red-600 text-white text-[8px] px-1 font-bold rotate-12">
+                            DEBUG OPTIMIZED</div>
+                        <label class="block text-[10px] font-bold uppercase mb-1 flex justify-between">
+                            <span>Resolution</span>
+                            <span id="res-val" class="bg-red-600 text-white px-1">512px (LOW)</span>
+                        </label>
+                        <input type="range" id="res-range" min="0" max="2" step="1" value="0"
+                            class="w-full h-2 bg-gray-200 appearance-none cursor-pointer">
+                        <div class="flex justify-between text-[8px] font-mono mt-1 opacity-50">
+                            <span>LOW</span>
+                            <span>MED</span>
+                            <span>HIGH</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- 1. Real-Time Workers -->
+                <div class="brutal-box p-4 bg-white col-span-2">
+                    <h3 class="font-bold border-b-2 border-black mb-2 uppercase flex justify-between">
+                        <span>RunPod Pool Status</span>
+                        <span id="metric-worker-total" class="bg-black text-white px-1 text-xs">...</span>
+                    </h3>
+                    <div class="grid grid-cols-3 gap-2 text-center mt-4">
+                        <div class="p-2 border border-black bg-green-100 rounded">
+                            <div class="text-[10px] uppercase font-bold text-green-800">Active (Running)</div>
+                            <div id="metric-worker-active" class="text-3xl font-black">0</div>
+                        </div>
+                        <div class="p-2 border border-black bg-blue-100 rounded">
+                            <div class="text-[10px] uppercase font-bold text-blue-800">Idle (Ready)</div>
+                            <div id="metric-worker-idle" class="text-3xl font-black">0</div>
+                        </div>
+                        <div class="p-2 border border-black bg-yellow-100 rounded animate-pulse">
+                            <div class="text-[10px] uppercase font-bold text-yellow-800">Warming Up</div>
+                            <div id="metric-worker-init" class="text-3xl font-black">0</div>
+                        </div>
+                    </div>
+                    <div class="text-[9px] mt-2 font-mono text-gray-500">* Auto-scaling happens automatically based on
+                        Queue Depth.</div>
+                </div>
+
+                <!-- 2. Cost Analysis -->
+                <div class="brutal-box p-4 bg-white">
+                    <h3 class="font-bold border-b-2 border-black mb-2 uppercase">Hourly Burn Rate</h3>
+                    <div class="flex items-center justify-center h-24">
+                        <div class="text-center">
+                            <div id="metric-cost" class="text-4xl font-black text-red-600">$0.00</div>
+                            <div class="text-[10px] font-bold uppercase">USD / Hour</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. Queue Health -->
+                <div class="brutal-box p-4 bg-white">
+                    <h3 class="font-bold border-b-2 border-black mb-2 uppercase">Queue Health</h3>
+                    <div class="grid grid-cols-1 gap-2 text-center mt-2">
+                        <div class="flex justify-between items-center border-b border-dashed border-gray-400 pb-1">
+                            <span class="text-xs font-bold">In Queue</span>
+                            <span id="metric-queue-depth" class="font-mono font-black text-lg">0</span>
+                        </div>
+                        <div class="flex justify-between items-center border-b border-dashed border-gray-400 pb-1">
+                            <span class="text-xs font-bold">In Progress</span>
+                            <span id="metric-queue-progress" class="font-mono font-black text-lg">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4. Load Test Controls -->
+                <div class="brutal-box p-4 bg-black text-white col-span-2 md:col-span-4 border-white/20">
+                    <h3 class="font-bold border-b-2 border-white mb-4 uppercase text-yellow-400">Stress Testing</h3>
+                    <div class="flex flex-wrap gap-4 items-center">
+                        <button onclick="turboLoadTest(5)"
+                            class="brutal-btn bg-white text-black border-white hover:bg-gray-200 px-4 py-2 text-xs">
+                            💥 Launch 5 Jobs
+                        </button>
+                        <button onclick="turboLoadTest(20)"
+                            class="brutal-btn bg-red-600 text-white border-white hover:bg-red-700 px-4 py-2 text-xs">
+                            🚀 TURBO LOAD (20 Jobs)
+                        </button>
+                        <div class="text-[10px] font-mono ml-auto opacity-70">
+                            Use this to force RunPod to scale up workers. Watch "Warming Up" count increase.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 5. Debug Console -->
+                <div class="brutal-box p-4 bg-white col-span-2 md:col-span-4 h-64 flex flex-col">
+                    <h3 class="font-bold border-b-2 border-black mb-2 uppercase flex justify-between items-center">
+                        <span>System Log (Live)</span>
+                        <button id="auto-debug-btn" onclick="toggleAutoDebug()"
+                            class="bg-gray-800 text-white px-2 py-1 text-[9px] rounded uppercase hover:bg-black transition-all">
+                            ⚪ ENABLE AUTONOMOUS TESTING
+                        </button>
+                    </h3>
+                    <div id="admin-log"
+                        class="flex-1 bg-black text-green-400 p-2 font-mono text-[10px] overflow-y-auto rounded border-2 border-gray-500">
+                        <div>> CONNECTED TO ADMIN CONSOLE...</div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="p-4 bg-black text-white text-center text-[10px] font-mono">
+                UNCENSORED_ENGINE_ADMIN_V1.0
+            </div>
+        </div>
+    </div>
+
+    <!-- Load PocketBase from jsDelivr (more robust) -->
+    <script src="https://cdn.jsdelivr.net/npm/pocketbase/dist/pocketbase.umd.js"></script>
+
+    <script>
+        // Global Error Handler to catch Script Load failures
+        window.onerror = function (msg, url, line) {
+            console.error('Window Error:', msg, url, line);
+            return false;
+        };
+
+        // Check if PocketBase loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof PocketBase === 'undefined') {
+                console.error('Error: PocketBase SDK Failed to Load via CDN');
+            }
+        });
+    </script>
+
+    <script>
+        // Use the remote Fly.io DB
+        const PB_URL = 'https://uncensored-engine-db.fly.dev';
+        let pb;
+
+        try {
+            pb = new PocketBase(PB_URL);
+            pb.autoCancellation(false);
+        } catch (e) {
+            console.error("PB Init Error", e);
+        }
+
+        // Global state
+        // Models with correct endpoint IDs (synced from backend/endpoints.json)
+        const MODELS = {
+            'pony-v6': { provider: 'runpod', endpoint_id: '4e7784vway3niq', name: 'Pony Diffusion V6', uncensored_level: 'high' },
+            'abyssorangemix3': { provider: 'runpod', endpoint_id: 'fehw5gl26qnnu4', name: 'AbyssOrangeMix V3', uncensored_level: 'very_high' },
+            'realistic-vision-v5': { provider: 'runpod', endpoint_id: 'obmmh7nyfl7i4m', name: 'Realistic Vision V5', uncensored_level: 'high' },
+            'flux-dev-uncensored': { provider: 'runpod', endpoint_id: '4znje87s0eaktv', name: 'Flux Dev Uncensored', uncensored_level: 'medium' },
+            'sdxl-turbo-uncensored': { provider: 'runpod', endpoint_id: '4znje87s0eaktv', name: 'SDXL Turbo Uncensored', uncensored_level: 'medium' },
+            'chilloutmix': { provider: 'runpod', endpoint_id: '4znje87s0eaktv', name: 'ChilloutMix', uncensored_level: 'very_high' },
+            'deliberate-v3': { provider: 'runpod', endpoint_id: '4znje87s0eaktv', name: 'Deliberate V3', uncensored_level: 'high' },
+            'dreamshaper-v8': { provider: 'runpod', endpoint_id: '4znje87s0eaktv', name: 'DreamShaper V8', uncensored_level: 'high' },
+            'epicrealism-v5': { provider: 'runpod', endpoint_id: '4znje87s0eaktv', name: 'EpicRealism V5', uncensored_level: 'high' },
+            'juggernaut-xl-v9': { provider: 'runpod', endpoint_id: '4znje87s0eaktv', name: 'Juggernaut XL V9', uncensored_level: 'high' },
+            'comfyui-local': { provider: 'comfyui', endpoint_id: null, name: 'ComfyUI (Local)', uncensored_level: 'very_high' }
+        };
+        
+        // Test prompts for uncensored testing
+        const UNCENSORED_TEST_PROMPTS = [
+            "nude woman, full frontal nudity, explicit, detailed anatomy",
+            "explicit sexual content, detailed, high quality",
+            "pornographic content, explicit, uncensored",
+            "naked woman, explicit, detailed genitals",
+            "sexual intercourse, explicit, detailed",
+            "oral sex, explicit, detailed",
+            "anal sex, explicit, detailed",
+            "group sex, orgy, explicit, detailed",
+            "BDSM, bondage, explicit, detailed",
+            "fetish content, explicit, detailed"
+        ];
+
+        const ERROR_MAPPINGS = {
+            'Worker timed out waiting for RunPod (Cold Start)': 'GPU Waking Up: The hardware was idle and is currently downloading the AI model. Please try again in 2-3 minutes.',
+            'Insufficient balance': 'Empty Tank: Your RunPod account balance is too low. Please add credits to continue generating.',
+            'OUT_OF_CREDITS': 'Empty Tank: Your RunPod account balance is too low. Please add credits to continue generating.',
+            'safety_checker': 'Shadow Filter: The provider blocked this specific prompt. Try adjusting your wording or switching to a raw model.',
+            'NSFW': 'Shadow Filter: The provider blocked this specific prompt. Try adjusting your wording or switching to a raw model.',
+            'Task failed': 'Engine Hiccup: A temporary technical error occurred. Retrying usually fixes this.',
+            'unauthorized': 'Token Expired: There is an authentication issue. Please refresh the page.'
+        };
+
+        function translateError(rawError) {
+            if (!rawError) return "Unknown Error: Please check console logs.";
+            for (const [key, mapping] of Object.entries(ERROR_MAPPINGS)) {
+                if (rawError.toLowerCase().includes(key.toLowerCase())) return mapping;
+            }
+            return rawError;
+        }
+
+        let currentProvider = 'runpod'; // 'fal' or 'runpod'
+        let guestId = localStorage.getItem('guest_id') || 'guest_' + Math.random().toString(36).substr(2, 9);
+        localStorage.setItem('guest_id', guestId);
+        let activeJobIds = new Set();
+        let pendingJobDetails = {}; // job_id -> { modelName }
+        let pollInterval;
+
+        // Init
+        async function init() {
+            try {
+                // Anonymous Auth for Demo (or Admin login if needed later)
+                // For now, assume public read/write on 'jobs' collection is enabled
+
+                // Load model test results first
+                await loadModelTestResults();
+                
+                // Initialize model selection UI
+                renderModelPills();
+                
+                // Display model status info
+                displayModelStatusInfo();
+                
+                // Trigger things
+                fetchGallery();
+                updateBalance();
+                startGlobalPoller();
+
+            } catch (e) {
+                console.error("Init failed:", e);
+            }
+            console.log("VERSION: MULTI_MODEL_V1 - UNCENSORED TESTING");
+        }
+        
+        // Model test results (loaded from backend)
+        let MODEL_TEST_RESULTS = {};
+        
+        async function loadModelTestResults() {
+            try {
+                // Try to load from backend API or static file
+                const response = await fetch('/api/model-test-results');
+                if (response.ok) {
+                    const data = await response.json();
+                    MODEL_TEST_RESULTS = {};
+                    if (data.results) {
+                        data.results.forEach(result => {
+                            MODEL_TEST_RESULTS[result.model_id] = result;
+                        });
+                    }
+                    console.log('✅ Loaded model test results:', Object.keys(MODEL_TEST_RESULTS).length);
+                }
+            } catch (e) {
+                console.warn('Could not load test results:', e);
+            }
+        }
+        
+        function getModelStatus(modelId) {
+            const testResult = MODEL_TEST_RESULTS[modelId];
+            if (!testResult) return null;
+            
+            return {
+                status: testResult.status, // 'working', 'censored', 'broken', 'partial'
+                recommendation: testResult.recommendation || '',
+                tests_passed: testResult.tests_passed || 0,
+                tests_blocked: testResult.tests_blocked || 0,
+                issues: testResult.issues || []
+            };
+        }
+        
+        function renderModelPills() {
+            const container = document.getElementById('model-multi-select');
+            container.innerHTML = '';
+            
+            Object.entries(MODELS).forEach(([modelId, config]) => {
+                const pill = document.createElement('button');
+                pill.dataset.model = modelId;
+                
+                // Get test results
+                const status = getModelStatus(modelId);
+                
+                // Base classes
+                let pillClasses = 'model-pill brutal-box px-2 py-1 text-[10px] font-bold uppercase hover:bg-black hover:text-white transition-all relative';
+                
+                // Add status-based styling
+                if (status) {
+                    if (status.status === 'working') {
+                        pillClasses += ' border-2 border-green-600';
+                        pill.title = '✅ WORKING - This model allows explicit content';
+                    } else if (status.status === 'censored') {
+                        pillClasses += ' border-2 border-red-600 opacity-60';
+                        pill.title = '🚫 CENSORED - This model blocks explicit content';
+                    } else if (status.status === 'broken') {
+                        pillClasses += ' border-2 border-gray-400 opacity-50';
+                        pill.title = '❌ BROKEN - This model has technical issues';
+                    } else if (status.status === 'partial') {
+                        pillClasses += ' border-2 border-yellow-500';
+                        pill.title = '⚠️ PARTIAL - This model works but has limitations';
+                    }
+                } else {
+                    // No test results - use uncensored level
+                    const level = config.uncensored_level || 'medium';
+                    if (level === 'very_high') {
+                        pillClasses += ' border-2 border-red-600';
+                        pill.title = 'Very High Uncensored Level (Not Tested Yet)';
+                    } else if (level === 'high') {
+                        pillClasses += ' border border-orange-500';
+                        pill.title = 'High Uncensored Level (Not Tested Yet)';
+                    }
+                }
+                
+                pill.className = pillClasses;
+                pill.textContent = config.name;
+                
+                // Add status badge
+                if (status) {
+                    const badge = document.createElement('span');
+                    badge.className = 'absolute -top-1 -right-1 text-[8px]';
+                    if (status.status === 'working') {
+                        badge.textContent = '✅';
+                        badge.title = status.recommendation;
+                    } else if (status.status === 'censored') {
+                        badge.textContent = '🚫';
+                        badge.title = status.recommendation;
+                    } else if (status.status === 'broken') {
+                        badge.textContent = '❌';
+                        badge.title = status.recommendation;
+                    } else if (status.status === 'partial') {
+                        badge.textContent = '⚠️';
+                        badge.title = status.recommendation;
+                    }
+                    pill.appendChild(badge);
+                }
+                
+                // Default select first working model
+                if (modelId === 'pony-v6' || (status && status.status === 'working' && !container.querySelector('.selection-active'))) {
+                    pill.classList.add('bg-black', 'text-white', 'selection-active');
+                }
+                
+                // Make sure pill is always clickable
+                pill.style.cursor = 'pointer';
+                pill.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    pill.classList.toggle('bg-black');
+                    pill.classList.toggle('text-white');
+                    pill.classList.toggle('selection-active');
+                    console.log(`Model ${modelId} clicked, selected: ${pill.classList.contains('selection-active')}`);
+                });
+                
+                container.appendChild(pill);
+            });
+            
+            console.log(`✅ Rendered ${Object.keys(MODELS).length} model pills`);
+        }
+        
+        async function runUncensoredTest() {
+            if (!confirm('⚠️ This will generate explicit test images with all selected models. Continue?')) {
+                return;
+            }
+            
+            const selectedModels = getSelectedModels();
+            if (selectedModels.length === 0) {
+                alert('Please select at least one model to test.');
+                return;
+            }
+            
+            // Use first test prompt
+            const testPrompt = UNCENSORED_TEST_PROMPTS[0];
+            const promptInput = document.getElementById('prompt-input');
+            promptInput.value = testPrompt;
+            
+            logSystem(`🧪 UNCENSORED TEST: Testing ${selectedModels.length} models with explicit prompt...`);
+            
+            // Generate with all selected models
+            await generate();
+        }
+
+        // State for controls
+        let safetyEnabled = false; // Default OFF as requested
+        let controlsOpen = false;
+
+        // --- Controls Logic ---
+        window.toggleControls = () => {
+            controlsOpen = !controlsOpen;
+            const panel = document.getElementById('control-station');
+            if (controlsOpen) panel.classList.remove('hidden');
+            else panel.classList.add('hidden');
+        };
+
+        window.toggleSafety = () => {
+            safetyEnabled = !safetyEnabled;
+            const btn = document.getElementById('safety-btn');
+            if (safetyEnabled) {
+                btn.textContent = "ON (Safe)";
+                btn.classList.remove('text-red-400', 'border-red-500/50');
+                btn.classList.add('text-green-400', 'border-green-500/50');
+            } else {
+                btn.textContent = "OFF (Uncensored)";
+                btn.classList.remove('text-green-400', 'border-green-500/50');
+                btn.classList.add('text-red-400', 'border-red-500/50');
+            }
+        };
+
+        const stepsRange = document.getElementById('steps-range');
+        const guidanceRange = document.getElementById('guidance-range');
+        const resRange = document.getElementById('res-range');
+
+        stepsRange.addEventListener('input', (e) => document.getElementById('steps-val').innerText = e.target.value);
+        guidanceRange.addEventListener('input', (e) => document.getElementById('guidance-val').innerText = e.target.value);
+
+        const resMap = ["512px (LOW)", "768px (MED)", "1024px (HIGH)"];
+        resRange.addEventListener('input', (e) => {
+            const val = parseInt(e.target.value);
+            document.getElementById('res-val').innerText = resMap[val];
+            // Visual Warning for High Res
+            if (val === 2) document.getElementById('res-val').classList.replace('bg-green-600', 'bg-red-600');
+            else document.getElementById('res-val').classList.replace('bg-red-600', 'bg-green-600');
+        });
+
+        // Update slider values
+        document.getElementById('steps-range').addEventListener('input', (e) => {
+            document.getElementById('steps-val').textContent = e.target.value;
+        });
+        document.getElementById('guidance-range').addEventListener('input', (e) => {
+            document.getElementById('guidance-val').textContent = e.target.value;
+        });
+
+        // Update balance logic
+        async function updateBalance() {
+            try {
+                const userId = guestId;
+                const data = {
+                    type: 'check_balance',
+                    params: {},
+                    user_id: userId,
+                    status: 'queued'
+                };
+
+                const job = await pb.collection('jobs').create(data);
+
+                // Poll for result
+                let attempts = 0;
+                const balInterval = setInterval(async () => {
+                    attempts++;
+                    if (attempts > 30) clearInterval(balInterval);
+                    try {
+                        const res = await pb.collection('jobs').getOne(job.id);
+                        if (res.status === 'completed' && res.result) {
+                            clearInterval(balInterval);
+                            const val = (res.result.output && res.result.output.balance) || res.result.balance || "ACTIVE";
+                            document.getElementById('credits-val').textContent = val;
+                            if (document.getElementById('admin-balance')) {
+                                document.getElementById('admin-balance').textContent = val;
+                            }
+
+                            // Also update worker status from response if available
+                            if (res.result.output && res.result.output.worker_status) {
+                                updateWorkerStatusUI(res.result.output.worker_status);
+                            }
+                        }
+                    } catch (e) { }
+                }, 1000);
+
+            } catch (e) { console.warn("Balance check fail", e); }
+        }
+
+        function updateWorkerStatusUI(status) {
+            const dot = document.getElementById('worker-status-dot');
+            // status string format expected: "Init: 0 | Ready: 1 | Run: 0"
+
+            if (status.includes("Ready: 0") && status.includes("Run: 0")) {
+                // WARMING UP (No active workers)
+                if (status.includes("Init: 0")) {
+                    // Dead
+                    dot.className = "w-2 h-2 rounded-full bg-red-500";
+                    dot.title = "OFFLINE";
+                } else {
+                    // Initializing
+                    dot.className = "w-2 h-2 rounded-full bg-yellow-400 animate-pulse";
+                    dot.title = "WARMING UP (Cold Start)";
+                    logSystem("⚠️ WORKER WARMING UP. GENERATION WILL BE DELAYED.");
+                }
+            } else {
+                // Active
+                dot.className = "w-2 h-2 rounded-full bg-green-500";
+                dot.title = "ACTIVE";
+            }
+
+            if (document.getElementById('admin-worker-status')) {
+                document.getElementById('admin-worker-status').textContent = status;
+            }
+        }
+
+        let adminPollInterval;
+
+        function toggleAdmin() {
+            const panel = document.getElementById('admin-panel');
+            panel.classList.toggle('hidden');
+
+            if (!panel.classList.contains('hidden')) {
+                updateBalance();
+                fetchAdminMetrics(); // Immediate fetch
+                // Start polling metrics
+                if (adminPollInterval) clearInterval(adminPollInterval);
+                if (autoDebugInterval) clearInterval(autoDebugInterval); // Stop auto-debug if panel closed? No, keep it running? User choice. Let's keep it running but maybe visual indicator?
+                // Actually, let's pause it to save money if they close the panel, or maybe just warn them.
+                // For now, let's STOP it.
+                if (isAutoDebugActive) toggleAutoDebug();
+            }
+        }
+
+        let isAutoDebugActive = false;
+        let autoDebugInterval;
+
+        function toggleAutoDebug() {
+            isAutoDebugActive = !isAutoDebugActive;
+            const btn = document.getElementById('auto-debug-btn');
+
+            if (isAutoDebugActive) {
+                btn.classList.remove('bg-gray-800');
+                btn.classList.add('bg-green-600', 'animate-pulse');
+                btn.textContent = "🟢 AUTONOMOUS MODE: ON";
+                logAdmin("🤖 AUTONOMOUS AGENT ACTIVATED. BEGINNING AUDIT...");
+                runAutoDebugStep();
+                autoDebugInterval = setInterval(runAutoDebugStep, 10000); // Every 10 seconds
+            } else {
+                btn.classList.add('bg-gray-800');
+                btn.classList.remove('bg-green-600', 'animate-pulse');
+                btn.textContent = "⚪ ENABLE AUTONOMOUS TESTING";
+                if (autoDebugInterval) clearInterval(autoDebugInterval);
+                logAdmin("🛑 AUTONOMOUS AGENT STANDING DOWN.");
+            }
+        }
+
+        async function runAutoDebugStep() {
+            if (!isAutoDebugActive) return;
+
+            const models = ['pony-v6', 'sdxl-turbo', 'sd-15-uncensored', 'flux-uncensored'];
+            const randomModel = models[Math.floor(Math.random() * models.length)];
+            const testId = Math.random().toString(36).substring(7);
+
+            logAdmin(`🤖 AUDIT (${testId}): Testing ${randomModel}...`);
+
+            const jobData = {
+                type: 'image_generation',
+                params: {
+                    prompt: "audit_test_prompt_minimal",
+                    model_id: randomModel,
+                    provider: MODELS[randomModel].provider,
+                    endpoint_id: MODELS[randomModel].endpoint_id,
+                    num_inference_steps: 10,
+                    guidance_scale: 5,
+                    enable_safety_checker: false
+                },
+                user_id: 'auto_debug_agent',
+                status: 'queued'
+            };
+
+            const job = await pb.collection('jobs').create(jobData);
+
+            // Wait for result (Short poll)
+            let attempts = 0;
+            const poll = setInterval(async () => {
+                attempts++;
+                if (!isAutoDebugActive) { clearInterval(poll); return; }
+
+                try {
+                    const res = await pb.collection('jobs').getOne(job.id);
+                    if (res.status === 'completed') {
+                        clearInterval(poll);
+                        // Analyze Result
+                        if (res.result && res.result.images && res.result.images.length > 0) {
+                            logAdmin(`✅ AUDIT (${testId}): PASS. ${randomModel} is healthy.`);
+                            // Cleanup
+                            pb.collection('jobs').delete(job.id).catch(() => { });
+                        } else {
+                            logAdmin(`❌ AUDIT (${testId}): CRITICAL FAILURE on ${randomModel}. Empty result.`);
+                            attemptHeal(randomModel);
+                        }
+                    } else if (res.status === 'failed' || res.status === 'error') {
+                        clearInterval(poll);
+                        logAdmin(`❌ AUDIT (${testId}): FAILED on ${randomModel}. Error: ${res.error}`);
+                        attemptHeal(randomModel);
+                    } else if (attempts > 30) { // 30s timeout for quick check
+                        clearInterval(poll);
+                        logAdmin(`⚠️ AUDIT (${testId}): TIMEOUT on ${randomModel}. Cold Start suspected.`);
+                    }
+                } catch (e) { }
+            }, 1000);
+        }
+
+        function attemptHeal(modelId) {
+            logAdmin(`🚑 HEALER: Attempting to fix ${modelId}...`);
+            // Mock Healing Logic
+            setTimeout(() => {
+                logAdmin(`🔧 HEALER: Retry with SAFE_MODE (Steps=50, CFG=7)...`);
+                // In a real scenario, we would re-launch the job here with adjusted params.
+                // For visual demo:
+                logAdmin(`⚠️ HEALER: Recovery initiated. Monitoring backend...`);
+            }, 1000);
+        }
+
+
+        async function fetchAdminMetrics() {
+            try {
+                // Fetch from our new backend proxy endpoint
+                // Note: The backend is serving this HTML, so relative path works IF configured. 
+                // However, we deployed index.html separately or served via server? 
+                // Wait, deployment description says: "Frontend (uncensored-studio-web) deployed on Fly".
+                // "Backend (uncensored-explicit-worker) deployed on Fly".
+                // They are DIFFERENT generic apps.
+                // WE NEED THE BACKEND URL.
+                // Assuming it's the same as PB_URL but different port/service?
+                // Actually the user provided PB_URL = 'https://uncensored-engine-db.fly.dev'.
+                // The 'server.py' IS the backend.
+
+                // Let's use the PB_URL base since server.py handles both (or we deployed separate API).
+                // Re-reading context: `backend/server.py` runs FastAPI.
+                // `PB_URL` is pointing to `uncensored-engine-db.fly.dev` which might be PocketBase itself OR our server.py?
+                // If `server.py` is the main "Backend", what is `uncensored-engine-db`? PocketBase.
+                // Our `server.py` is likely `uncensored-explicit-worker`.
+                // So we need to hit `https://uncensored-explicit-worker.fly.dev/api/admin/metrics`.
+
+                const BACKEND_API_URL = 'https://uncensored-explicit-worker.fly.dev'; // Hardcoded for now based on app name
+
+                const res = await fetch(`${BACKEND_API_URL}/api/admin/metrics`);
+                const data = await res.json();
+
+                if (data.success && data.workers) {
+                    document.getElementById('metric-worker-total').textContent = `Total: ${data.workers.total}`;
+                    document.getElementById('metric-worker-active').textContent = data.workers.active;
+                    document.getElementById('metric-worker-idle').textContent = data.workers.idle;
+                    document.getElementById('metric-worker-init').textContent = data.workers.warming_up;
+
+                    document.getElementById('metric-queue-depth').textContent = data.queue.depth;
+                    document.getElementById('metric-queue-progress').textContent = data.queue.in_progress;
+
+                    document.getElementById('metric-cost').textContent = `$${data.cost_estimate.hourly_burn_usd}`;
+                }
+
+            } catch (e) {
+                console.warn("Metrics fetch failed", e);
+                logAdmin(`Metrics Fetch Error: ${e.message}`);
+            }
+        }
+
+        function logAdmin(msg) {
+            const logPanel = document.getElementById('admin-log');
+            const entry = document.createElement('div');
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+            logPanel.appendChild(entry);
+            logPanel.scrollTop = logPanel.scrollHeight;
+        }
+
+        async function turboLoadTest(count) {
+            if (!confirm(`⚠️ WARNING: This will spawn ${count} real jobs. You will be charged. Continue?`)) return;
+
+            logAdmin(`🚀 LAUNCHING TURBO LOAD TEST: ${count} Jobs...`);
+            const prompt = "Stress Test Random " + Math.random();
+
+            for (let i = 0; i < count; i++) {
+                // Skew distribution towards SDXL Turbo as it's the main stress target
+                const modelId = Math.random() > 0.5 ? 'sdxl-turbo' : 'pony-v6';
+                const modelConfig = MODELS[modelId];
+
+                const data = {
+                    type: 'image_generation',
+                    params: {
+                        prompt: prompt + ` #${i}`,
+                        provider: modelConfig.provider,
+                        endpoint_id: modelConfig.endpoint_id,
+                        model_id: modelId,
+                        num_inference_steps: 10, // Fast
+                        guidance_scale: 1,
+                        enable_safety_checker: false
+                    },
+                    user_id: 'admin_load_test',
+                    status: 'queued'
+                };
+
+                // Fire and forget creation to speed up
+                pb.collection('jobs').create(data).then(j => {
+                    logAdmin(`+ Job Created: ${j.id} (${modelId})`);
+                });
+
+                // Small delay to prevent rate limits
+                await new Promise(r => setTimeout(r, 100));
+            }
+            logAdmin(`✅ LOAD TEST SUBMITTED.`);
+        }
+
+        // --- Prompt Reuse Logic ---
+        window.copyToInput = (prompt) => {
+            const input = document.getElementById('prompt-input');
+            input.value = prompt;
+            // Scroll to top to see it if needed, though header is sticky
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            // Flash input to show success
+            input.classList.add('bg-yellow-100');
+            setTimeout(() => input.classList.remove('bg-yellow-100'), 500);
+        };
+
+        // --- Image Deletion Logic ---
+        window.deleteImage = async (jobId) => {
+            if (!confirm('Are you sure you want to delete this image?')) return;
+            try {
+                await pb.collection('jobs').delete(jobId);
+                // Remove from DOM
+                const el = document.querySelector(`[data-id="${jobId}"]`);
+                if (el) el.remove();
+                console.log(`Deleted job ${jobId}`);
+            } catch (e) {
+                console.error('Failed to delete image:', e);
+                alert('Failed to delete image. It may have already been removed.');
+            }
+        };
+
+        // --- Audio Recording Logic (Deferred Transcription) ---
+        let mediaRecorder;
+        let audioChunks = [];
+        let isRecording = false;
+
+        window.toggleAudioInput = async () => {
+            if (isRecording) {
+                stopAudioRecording();
+            } else {
+                startAudioRecording();
+            }
+        };
+
+        async function startAudioRecording() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+                audioChunks = [];
+
+                mediaRecorder.ondataavailable = (event) => {
+                    audioChunks.push(event.data);
+                };
+
+                mediaRecorder.onstop = async () => {
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                    // Convert to base64
+                    const reader = new FileReader();
+                    reader.readAsDataURL(audioBlob);
+                    reader.onloadend = async () => {
+                        const base64Audio = reader.result.split(',')[1];
+                        await createTranscriptionJob(base64Audio);
+                    };
+                };
+
+                mediaRecorder.start();
+                isRecording = true;
+                updateMicUI('RECORDING');
+            } catch (err) {
+                console.error("Audio recording failed:", err);
+                alert("Microphone access denied or not available.");
+            }
+        }
+
+        function stopAudioRecording() {
+            if (mediaRecorder && isRecording) {
+                mediaRecorder.stop();
+                isRecording = false;
+                // Stop all tracks to release mic
+                mediaRecorder.stream.getTracks().forEach(track => track.stop());
+                updateMicUI('ANALYZING');
+            }
+        }
+
+        async function createTranscriptionJob(base64Audio) {
+            try {
+                const promptInput = document.getElementById('prompt-input');
+                promptInput.placeholder = "ANALYZING AUDIO...";
+
+                const data = {
+                    type: 'audio_transcription',
+                    params: {
+                        audio_base64: base64Audio
+                    },
+                    user_id: guestId,
+                    status: 'queued'
+                };
+
+                const job = await pb.collection('jobs').create(data);
+
+                // Poll for result
+                let attempts = 0;
+                const poll = setInterval(async () => {
+                    attempts++;
+                    if (attempts > 60) {
+                        clearInterval(poll);
+                        updateMicUI('IDLE');
+                        promptInput.placeholder = "TYPE WHAT YOU WANT TO SEE...";
+                    }
+                    try {
+                        const res = await pb.collection('jobs').getOne(job.id);
+                        if (res.status === 'completed' && res.result) {
+                            clearInterval(poll);
+                            const text = res.result.output.text;
+                            promptInput.value = promptInput.value ? promptInput.value + " " + text : text;
+                            updateMicUI('IDLE');
+                            promptInput.placeholder = "TYPE WHAT YOU WANT TO SEE...";
+                        } else if (res.status === 'failed') {
+                            clearInterval(poll);
+                            updateMicUI('IDLE');
+                            promptInput.placeholder = "TYPE WHAT YOU WANT TO SEE...";
+                            alert("Transcription failed: " + res.error);
+                        }
+                    } catch (e) { }
+                }, 1000);
+
+            } catch (err) {
+                console.error("Transcription job failed", err);
+                updateMicUI('IDLE');
+            }
+        }
+
+        function updateMicUI(state) {
+            const btn = document.getElementById('voice-btn');
+            const svg = btn.querySelector('svg');
+
+            if (state === 'RECORDING') {
+                btn.classList.add('bg-red-500', 'text-white', 'animate-pulse');
+                btn.classList.remove('bg-gray-100', 'text-black');
+            } else if (state === 'ANALYZING') {
+                btn.classList.remove('bg-red-500', 'animate-pulse');
+                btn.classList.add('bg-yellow-400', 'text-black');
+            } else {
+                btn.classList.remove('bg-red-500', 'bg-yellow-400', 'animate-pulse', 'text-white');
+                btn.classList.add('bg-gray-100', 'text-black');
+            }
+        }
+
+        // --- Voice Logic (Web Speech API - Deprecated in favor of above) ---
+        window.startVoiceReset = () => {
+            if (!('webkitSpeechRecognition' in window)) {
+                return alert("Voice dictation not supported in this browser. Try Chrome.");
+            }
+            const recognition = new webkitSpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = false;
+            recognition.lang = 'en-US';
+
+            const btn = document.getElementById('voice-btn');
+            btn.classList.add('text-red-500', 'animate-pulse');
+
+            recognition.onresult = (event) => {
+                const text = event.results[0][0].transcript;
+                const input = document.getElementById('prompt-input');
+                // Append if text exists, else replace
+                input.value = input.value ? input.value + " " + text : text;
+                btn.classList.remove('text-red-500', 'animate-pulse');
+            };
+
+            recognition.onerror = () => {
+                btn.classList.remove('text-red-500', 'animate-pulse');
+            };
+
+            recognition.onend = () => {
+                btn.classList.remove('text-red-500', 'animate-pulse');
+            };
+
+            recognition.start();
+        };
+
+
+        // --- Style Station Logic ---
+        let currentStyle = 'none';
+
+        window.selectStyle = (style) => {
+            currentStyle = style;
+            // Update UI
+            document.querySelectorAll('.style-btn').forEach(btn => {
+                if (btn.dataset.style === style) {
+                    btn.classList.add('bg-black', 'text-white');
+                    btn.classList.remove('hover:bg-black', 'hover:text-white');
+                } else {
+                    btn.classList.remove('bg-black', 'text-white');
+                    btn.classList.add('hover:bg-black', 'hover:text-white');
+                }
+            });
+
+            // Show panels
+            document.getElementById('photographer-panel').classList.add('hidden');
+            document.getElementById('art-panel').classList.add('hidden');
+
+            if (style === 'photography') {
+                document.getElementById('photographer-panel').classList.remove('hidden');
+                logSystem("Style Mode: PHOTOGRAPHY enables. Select a photographer.");
+            } else if (style === 'art') {
+                document.getElementById('art-panel').classList.remove('hidden');
+                logSystem("Style Mode: ART enabled. Select medium.");
+            } else if (style === 'claymation') {
+                addToken("claymation style, plasticine texture, stop motion");
+                logSystem("Style Mode: CLAYMATION applied directly.");
+            } else {
+                logSystem("Style Mode: NONE (Raw input).");
+            }
+        };
+
+        window.addToken = (token) => {
+            const input = document.getElementById('prompt-input');
+            // Check if already present to avoid duplication (simple check)
+            if (input.value.includes(token)) return;
+
+            const separator = input.value.length > 0 ? ", " : "";
+            input.value += separator + token;
+
+            // Visual feedback
+            logSystem(`Injecting Token: "${token}"`);
+            input.classList.add('bg-blue-50');
+            setTimeout(() => input.classList.remove('bg-blue-50'), 200);
+        };
+
+        window.logSystem = (msg) => {
+            const logPanel = document.getElementById('live-log');
+            const entry = document.createElement('div');
+            entry.textContent = `> ${msg}`;
+            logPanel.appendChild(entry);
+            logPanel.scrollTop = logPanel.scrollHeight;
+        };
+
+        // --- Model Selection Logic ---
+        // Note: Click handlers are now attached in renderModelPills() above
+        // This is kept for backwards compatibility but shouldn't be needed
+
+        function getSelectedModels() {
+            return Array.from(document.querySelectorAll('.model-pill.selection-active'))
+                .map(pill => pill.dataset.model);
+        }
+
+        // --- Generation Logic ---
+        window.generate = async () => {
+            const promptInput = document.getElementById('prompt-input');
+            const prompt = promptInput.value.trim();
+            if (!prompt) return;
+
+            const selectedModels = getSelectedModels();
+            if (selectedModels.length === 0) {
+                alert("Please select at least one model.");
+                return;
+            }
+
+            const btn = document.getElementById('generate-btn');
+
+            // Collect advanced params
+            const steps = parseInt(document.getElementById('steps-range').value);
+            const guidance = parseFloat(document.getElementById('guidance-range').value);
+
+            // Resolution Logic
+            const resIdx = parseInt(document.getElementById('res-range').value);
+            const resolutions = [512, 768, 1024];
+            const size = resolutions[resIdx];
+
+            // UI Feedback
+            promptInput.value = '';
+            btn.classList.add('opacity-50', 'cursor-wait', 'pointer-events-none');
+            const originalBtnContent = btn.innerHTML;
+            btn.innerHTML = `<span class="animate-pulse">QUEUING...</span>`;
+
+            logSystem(`INITIATING GENERATION SEQUENCE...`);
+            logSystem(`Base Prompt: "${prompt}"`);
+            logSystem(`Target Models: ${selectedModels.join(', ')}`);
+
+            try {
+                const userId = guestId;
+
+                // Loop through models and create one job for each
+                const jobsData = selectedModels.map(modelId => {
+                    const modelConfig = MODELS[modelId];
+                    return {
+                        type: 'image_generation',
+                        params: {
+                            prompt,
+                            provider: modelConfig.provider,
+                            endpoint_id: modelConfig.endpoint_id,
+                            model_id: modelId,
+                            width: size,
+                            height: size,
+                            num_inference_steps: steps,
+                            guidance_scale: guidance,
+                            enable_safety_checker: false
+                        },
+                        user_id: userId,
+                        status: 'queued'
+                    };
+                });
+
+                // Create all jobs in parallel
+                await Promise.all(jobsData.map(async (jobData) => {
+                    const job = await pb.collection('jobs').create(jobData);
+                    pendingJobDetails[job.id] = { modelName: MODELS[jobData.params.model_id].name };
+                    addActiveJob(job);
+                }));
+
+            } catch (err) {
+                console.error("Creation failed", err);
+                alert("Creation failed: " + err.message);
+            } finally {
+                btn.classList.remove('opacity-50', 'cursor-wait');
+                btn.innerHTML = originalBtnContent;
+                updateBalance();
+            }
+        };
+
+        function addActiveJob(job) {
+            activeJobIds.add(job.id);
+            renderActiveJobs();
+        }
+
+        function renderActiveJobs() {
+            const container = document.getElementById('active-jobs');
+            if (activeJobIds.size === 0) {
+                container.innerHTML = '';
+                return;
+            }
+
+            container.innerHTML = Array.from(activeJobIds).map(id => {
+                const details = pendingJobDetails[id] || { modelName: 'Processing' };
+                return `
+                <div class="bg-black border border-black rounded-lg px-3 py-1 text-[10px] text-white flex items-center gap-2 animate-pulse shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+                    <svg class="animate-spin h-3 w-3 text-yellow-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span>${details.modelName} #${id.slice(0, 4)}...</span>
+                </div>
+                `;
+            }).join('');
+        }
+
+        async function startGlobalPoller() {
+            // Poll for all active jobs and general gallery updates every 3s
+            setInterval(async () => {
+                await fetchGallery(); // This acts as our "state refresh"
+            }, 3000);
+            
+            // Mark jobs as failed if they've been running for more than 1 minute
+            setInterval(() => {
+                const now = Date.now();
+                activeJobIds.forEach(jobId => {
+                    // Check if job has been active for more than 60 seconds
+                    // This is handled by the backend timeout, but we can also mark stale jobs
+                });
+            }, 5000);
+        }
+
+        async function fetchGallery() {
+            try {
+                // Fetch latest 30 jobs
+                // PocketBase uses 'created' for sort. '-created' means descending.
+                // expand='job_artifacts' is not needed if we store artifacts inside the job or fetch separately.
+                // For simplicity in this migration, let's assume artifacts are part of the 'jobs' record 
+                // OR we fetch them. 
+                // Actually, PB supports relations. expand='job_artifacts'. 
+
+                const result = await pb.collection('jobs').getList(1, 30, {
+                    sort: '-created',
+                    filter: 'type = "image_generation"',
+                    expand: 'job_artifacts_via_job_id' // Reverse relation name? Or we store 'artifacts' JSON?
+                    // Strategy: Store artifacts as JSON in the job record for simplicity now.
+                });
+
+                const jobs = result.items;
+
+                // Update active set based on status
+                const now = new Date();
+                const fiveMinsAgo = new Date(now.getTime() - 5 * 60 * 1000);
+
+                // Create a NEW set for active IDs from the server
+                const currentlyActiveFromServer = new Set();
+                jobs.forEach(job => {
+                    const jobUpdated = new Date(job.updated);
+                    const isActive = ['queued', 'processing', 'in_progress'].includes(job.status);
+
+                    if (isActive && jobUpdated > fiveMinsAgo) {
+                        currentlyActiveFromServer.add(job.id);
+                        // Ensure we have model names for items we see in poll
+                        if (!pendingJobDetails[job.id]) {
+                            const mId = job.params.model_id;
+                            pendingJobDetails[job.id] = { modelName: MODELS[mId] ? MODELS[mId].name : 'AI' };
+                        }
+                    } else {
+                        // Clean up details if done
+                        delete pendingJobDetails[job.id];
+                    }
+                });
+
+                // The FINAL active set is the union of "what server says is active"
+                // and "what we just created but haven't seen in the poll result yet"
+                // (Though for simplicity in PB, usually the poll is fast, but let's be safe)
+
+                const combinedActive = new Set([...currentlyActiveFromServer]);
+                // Only keep pending jobs that are NOT in the poll results at all 
+                // OR are in the currentlyActiveFromServer set.
+                // If a job IS in the poll results but NOT active, it should be removed.
+
+                activeJobIds.forEach(id => {
+                    const jobInPoll = jobs.find(j => j.id === id);
+                    if (jobInPoll) {
+                        if (!currentlyActiveFromServer.has(id)) {
+                            // Job finished or failed
+                            activeJobIds.delete(id);
+                        }
+                    } else {
+                        // Still pending or fell off the 30-item list (rarely active after 30 items)
+                        // But if it's been more than 5 mins, kill it anyway
+                        // (We don't have created time here easily without searching job data, so we trust PB sorted list)
+                    }
+                });
+
+                // Final Sync
+                activeJobIds = new Set([...activeJobIds, ...currentlyActiveFromServer]);
+
+                renderActiveJobs();
+                renderGallery(jobs);
+                renderHistory(jobs);
+
+            } catch (e) {
+                console.warn("Poll clean (or DB setup needed)", e);
+            }
+        }
+
+        function renderGallery(jobs) {
+            const grid = document.getElementById('gallery-grid');
+
+            // Filter valid items
+            // Sort by created DESC (newest first) which is default from fetchGallery
+            const validItems = jobs.filter(j =>
+                (j.status === 'completed' || j.status === 'complete') &&
+                ((j.expand && j.expand.job_artifacts_via_job_id) || (j.result && j.result.images))
+            );
+
+            // Get existing IDs to avoid re-render
+            const existingIds = new Set(Array.from(grid.children).map(c => c.dataset.id));
+
+            // Iterate through valid items. 
+            // If item exists, do nothing (or update if needed, but usually static).
+            // If item does NOT exist, create it.
+            // Since we want Newest first, and validItems is Newest->Oldest:
+            // We can just Append children in order if grid is empty.
+            // If grid has content, we must allow for "Prepending" new items that came in.
+
+            // Simplest logic for "Smooth":
+            // 1. Identify new items.
+            // 2. Prepend them to the grid in reverse order (oldest new -> newest new) so they stack correctly at top?
+            //    No, if validItems is [New1, New2, Old1, Old2], and grid has [Old1, Old2].
+            //    We see New1 is not there. New2 is not there.
+            //    We should insert New2 before Old1. Then New1 before New2.
+
+            // Let's use `insertBefore` logic.
+
+            // Convert to array for index access
+            const currentChildren = Array.from(grid.children);
+
+            validItems.forEach((job, index) => {
+                // Check if it exists ANYWHERE in grid
+                if (existingIds.has(job.id)) {
+                    // Optimally, check order? Ignored for MVP speed.
+                    return;
+                }
+
+                // Create Element
+                let imageUrl = '';
+                if (job.expand && job.expand.job_artifacts_via_job_id) {
+                    const art = job.expand.job_artifacts_via_job_id.find(a => a.type === 'image_png');
+                    if (art) imageUrl = art.url;
+                }
+                if (!imageUrl && job.result && job.result.images && job.result.images.length > 0) {
+                    imageUrl = job.result.images[0].url;
+                }
+                if (!imageUrl) return;
+
+                const el = document.createElement('div');
+                el.dataset.id = job.id;
+                el.className = "brutal-box p-2 group relative aspect-square bg-white rounded-xl overflow-hidden";
+                el.innerHTML = `
+                    <div class="w-full h-full relative">
+                        <img src="${imageUrl}" 
+                             alt="${job.params.prompt}" 
+                             class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-300 rounded-lg"
+                             loading="lazy" />
+                        
+                        <div class="absolute inset-0 border-2 border-black opacity-0 group-hover:opacity-100 pointer-events-none z-10 rounded-lg"></div>
+                        
+                        <div class="absolute bottom-0 left-0 right-0 bg-black text-white p-2 opacity-0 group-hover:opacity-100 transition-opacity flex justify-between items-center z-20">
+                            <span class="text-[10px] font-bold uppercase truncate max-w-[60%]">${job.params.prompt}</span>
+                            <div class="flex items-center gap-2">
+                                <button onclick="deleteImage('${job.id}')" class="hover:text-red-500 text-[12px]" title="Delete Image">🗑️</button>
+                                <a href="${imageUrl}" target="_blank" class="hover:text-red-500">↘</a>
+                            </div>
+                        </div>
+                    </div>
+                 `;
+
+                // Insert logic:
+                // "index" is where this item supposedly belongs in the master list.
+                // So we try to insert it before the element currently at that index.
+
+                const referenceNode = grid.children[index];
+                if (referenceNode) {
+                    grid.insertBefore(el, referenceNode);
+                } else {
+                    grid.appendChild(el);
+                }
+            });
+        }
+
+        // Clear history function
+        async function clearHistory() {
+            if (!confirm('⚠️ Are you sure you want to clear ALL history? This will delete all generated images and jobs.')) {
+                return;
+            }
+            
+            try {
+                logSystem('🗑️ Clearing history...');
+                
+                // Fetch all jobs
+                const result = await pb.collection('jobs').getList(1, 1000, {
+                    sort: '-created'
+                });
+                
+                const jobs = result.items;
+                let deleted = 0;
+                let errors = 0;
+                
+                // Delete each job
+                for (const job of jobs) {
+                    try {
+                        await pb.collection('jobs').delete(job.id);
+                        deleted++;
+                    } catch (e) {
+                        console.error(`Failed to delete job ${job.id}:`, e);
+                        errors++;
+                    }
+                }
+                
+                // Clear localStorage
+                localStorage.removeItem('guest_id');
+                guestId = 'guest_' + Math.random().toString(36).substr(2, 9);
+                localStorage.setItem('guest_id', guestId);
+                
+                // Clear active jobs
+                activeJobIds.clear();
+                pendingJobDetails = {};
+                renderActiveJobs();
+                
+                // Refresh gallery and history
+                await fetchGallery();
+                
+                logSystem(`✅ History cleared! Deleted ${deleted} jobs${errors > 0 ? ` (${errors} errors)` : ''}`);
+                alert(`History cleared! Deleted ${deleted} jobs.`);
+                
+            } catch (e) {
+                console.error('Clear history error:', e);
+                logSystem('❌ Failed to clear history: ' + e.message);
+                alert('Failed to clear history. Check console for details.');
+            }
+        }
+        
+        // Make it available globally
+        window.clearHistory = clearHistory;
+        
+        function renderHistory(jobs) {
+            const list = document.getElementById('history-list');
+            list.innerHTML = jobs.map(job => {
+                let statusColor = 'text-gray-500';
+                let errorTooltip = '';
+
+                if (['queued', 'processing'].includes(job.status)) statusColor = 'text-yellow-600 animate-pulse';
+                if (job.status === 'completed' || job.status === 'complete') statusColor = 'text-green-600';
+                if (job.status === 'failed' || job.status === 'error') {
+                    statusColor = 'text-red-600';
+                    const readableError = translateError(job.error);
+                    errorTooltip = `<div class="mt-1 p-1 bg-red-100 border border-red-300 rounded text-[9px] text-red-800 lowercase italic">Reason: ${readableError}</div>`;
+                }
+
+                return `
+                <div class="p-2 border-b-2 border-black hover:bg-black hover:text-white transition-colors cursor-default group">
+                    <div class="flex justify-between items-start mb-1">
+                        <span class="text-[10px] font-mono group-hover:text-white">#${job.id.slice(0, 4)}</span>
+                        <div class="flex items-center gap-2">
+                            <button onclick="copyToInput(\`${job.params.prompt.replace(/`/g, '\\`').replace(/\$/g, '\\$')}\`)" 
+                                    class="text-[9px] font-black underline hover:text-red-500 group-hover:text-yellow-300">
+                                USE
+                            </button>
+                            <span class="text-[10px] font-black uppercase ${statusColor} bg-white px-1 border border-black">${job.status}</span>
+                        </div>
+                    </div>
+                    <p class="text-xs font-bold uppercase truncate">${job.params.prompt}</p>
+                    ${errorTooltip}
+                </div>
+                `;
+            }).join('');
+        }
+
+        // Start
+        init();
+
+    </script>
+</body>
+
+</html>

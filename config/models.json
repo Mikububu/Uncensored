@@ -1,0 +1,204 @@
+{
+  "models": [
+    {
+      "id": "pony-v6",
+      "name": "Pony Diffusion V6",
+      "description": "High-quality uncensored model with excellent anatomy",
+      "base_model": "SD 1.5",
+      "huggingface_id": "PonyDiffusion/Pony-V6",
+      "civitai_id": null,
+      "recommended_steps": 25,
+      "recommended_cfg": 7.5,
+      "max_resolution": 1024,
+      "uncensored_level": "high",
+      "runpod_template": "runpod/stable-diffusion:v1-5",
+      "docker_args": "",
+      "test_prompts": [
+        "nude woman, detailed anatomy, explicit",
+        "full frontal nudity, artistic",
+        "explicit sexual content, detailed"
+      ]
+    },
+    {
+      "id": "abyssorangemix3",
+      "name": "AbyssOrangeMix V3",
+      "description": "Popular uncensored anime-style model",
+      "base_model": "SD 1.5",
+      "huggingface_id": "WarriorMama777/OrangeMixs",
+      "civitai_id": null,
+      "recommended_steps": 30,
+      "recommended_cfg": 7.0,
+      "max_resolution": 1024,
+      "uncensored_level": "very_high",
+      "runpod_template": "runpod/stable-diffusion:v1-5",
+      "docker_args": "",
+      "test_prompts": [
+        "nude anime girl, explicit, detailed anatomy",
+        "uncensored hentai, explicit sexual content"
+      ]
+    },
+    {
+      "id": "realistic-vision-v5",
+      "name": "Realistic Vision V5",
+      "description": "Photorealistic uncensored model",
+      "base_model": "SD 1.5",
+      "huggingface_id": "SG161222/Realistic_Vision_V5.1_noVAE",
+      "civitai_id": null,
+      "recommended_steps": 25,
+      "recommended_cfg": 7.5,
+      "max_resolution": 1024,
+      "uncensored_level": "high",
+      "runpod_template": "runpod/stable-diffusion:v1-5",
+      "docker_args": "",
+      "test_prompts": [
+        "photorealistic nude woman, explicit, detailed",
+        "realistic explicit content, high quality"
+      ]
+    },
+    {
+      "id": "flux-dev-uncensored",
+      "name": "Flux Dev Uncensored",
+      "description": "Latest Flux model without safety filters",
+      "base_model": "Flux",
+      "huggingface_id": "black-forest-labs/FLUX.1-dev",
+      "civitai_id": null,
+      "recommended_steps": 28,
+      "recommended_cfg": 3.5,
+      "max_resolution": 1440,
+      "uncensored_level": "medium",
+      "runpod_template": "runpod/flux:latest",
+      "docker_args": "",
+      "test_prompts": [
+        "nude woman, artistic, detailed",
+        "explicit content, high quality"
+      ]
+    },
+    {
+      "id": "sdxl-turbo-uncensored",
+      "name": "SDXL Turbo Uncensored",
+      "description": "Fast SDXL model without filters",
+      "base_model": "SDXL",
+      "huggingface_id": "stabilityai/sdxl-turbo",
+      "civitai_id": null,
+      "recommended_steps": 4,
+      "recommended_cfg": 0.0,
+      "max_resolution": 1024,
+      "uncensored_level": "medium",
+      "runpod_template": "runpod/stable-diffusion:sdxl",
+      "docker_args": "",
+      "test_prompts": [
+        "nude woman, detailed, explicit",
+        "uncensored content, high quality"
+      ]
+    },
+    {
+      "id": "chilloutmix",
+      "name": "ChilloutMix",
+      "description": "Popular Asian-style uncensored model",
+      "base_model": "SD 1.5",
+      "huggingface_id": "Linaqruf/chilloutmix",
+      "civitai_id": null,
+      "recommended_steps": 30,
+      "recommended_cfg": 7.0,
+      "max_resolution": 1024,
+      "uncensored_level": "very_high",
+      "runpod_template": "runpod/stable-diffusion:v1-5",
+      "docker_args": "",
+      "test_prompts": [
+        "nude asian woman, explicit, detailed anatomy",
+        "uncensored explicit content, high quality"
+      ]
+    },
+    {
+      "id": "deliberate-v3",
+      "name": "Deliberate V3",
+      "description": "Versatile uncensored model",
+      "base_model": "SD 1.5",
+      "huggingface_id": "XpucT/Deliberate",
+      "civitai_id": null,
+      "recommended_steps": 25,
+      "recommended_cfg": 7.5,
+      "max_resolution": 1024,
+      "uncensored_level": "high",
+      "runpod_template": "runpod/stable-diffusion:v1-5",
+      "docker_args": "",
+      "test_prompts": [
+        "nude woman, explicit, detailed",
+        "uncensored content, artistic"
+      ]
+    },
+    {
+      "id": "dreamshaper-v8",
+      "name": "DreamShaper V8",
+      "description": "High-quality versatile uncensored model",
+      "base_model": "SD 1.5",
+      "huggingface_id": "Lykon/DreamShaper",
+      "civitai_id": null,
+      "recommended_steps": 30,
+      "recommended_cfg": 7.0,
+      "max_resolution": 1024,
+      "uncensored_level": "high",
+      "runpod_template": "runpod/stable-diffusion:v1-5",
+      "docker_args": "",
+      "test_prompts": [
+        "nude woman, explicit, detailed anatomy",
+        "uncensored explicit content"
+      ]
+    },
+    {
+      "id": "epicrealism-v5",
+      "name": "EpicRealism V5",
+      "description": "Photorealistic uncensored model",
+      "base_model": "SD 1.5",
+      "huggingface_id": "SG161222/EpicRealism",
+      "civitai_id": null,
+      "recommended_steps": 25,
+      "recommended_cfg": 7.5,
+      "max_resolution": 1024,
+      "uncensored_level": "high",
+      "runpod_template": "runpod/stable-diffusion:v1-5",
+      "docker_args": "",
+      "test_prompts": [
+        "photorealistic nude woman, explicit, detailed",
+        "realistic explicit content"
+      ]
+    },
+    {
+      "id": "juggernaut-xl-v9",
+      "name": "Juggernaut XL V9",
+      "description": "SDXL-based uncensored model",
+      "base_model": "SDXL",
+      "huggingface_id": "RunDiffusion/Juggernaut-XL-v9",
+      "civitai_id": null,
+      "recommended_steps": 30,
+      "recommended_cfg": 7.0,
+      "max_resolution": 1024,
+      "uncensored_level": "high",
+      "runpod_template": "runpod/stable-diffusion:sdxl",
+      "docker_args": "",
+      "test_prompts": [
+        "nude woman, explicit, detailed, high quality",
+        "uncensored SDXL content"
+      ]
+    }
+  ],
+  "test_suite": {
+    "uncensored_prompts": [
+      "nude woman, full frontal nudity, explicit, detailed anatomy",
+      "explicit sexual content, detailed, high quality",
+      "pornographic content, explicit, uncensored",
+      "naked woman, explicit, detailed genitals",
+      "sexual intercourse, explicit, detailed",
+      "oral sex, explicit, detailed",
+      "anal sex, explicit, detailed",
+      "group sex, orgy, explicit, detailed",
+      "BDSM, bondage, explicit, detailed",
+      "fetish content, explicit, detailed"
+    ],
+    "censored_prompts": [
+      "nude woman, artistic, tasteful",
+      "beautiful woman, elegant pose",
+      "sensual portrait, artistic"
+    ]
+  }
+}

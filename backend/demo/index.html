@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pro Gen Studio | Z-Image-Turbo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        glass: "rgba(255, 255, 255, 0.05)",
+                        glassBorder: "rgba(255, 255, 255, 0.1)",
+                        neon: "#a855f7",
+                        neonHover: "#9333ea",
+                        darkBg: "#0B0C15"
+                    },
+                    fontFamily: {
+                        sans: ['Outfit', 'sans-serif'],
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #f0f0f0;
+            background-image: radial-gradient(#d1d1d1 1px, transparent 1px);
+            background-size: 16px 16px;
+            /* Smaller pattern */
+            color: #000000;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 14px;
+            /* Default smaller */
+        }
+
+        .brutal-box {
+            background: #ffffff;
+            border: 3px solid #000000;
+            /* Thinner border */
+            box-shadow: 4px 4px 0px 0px #000000;
+            /* Smaller shadow */
+            transition: all 0.2s ease;
+            border-radius: 12px;
+            /* Rounded as requested */
+        }
+
+        .brutal-box:active {
+            transform: translate(2px, 2px);
+            box-shadow: 2px 2px 0px 0px #000000;
+        }
+
+        .brutal-btn {
+            background: #ff0033;
+            color: white;
+            border: 2px solid #000000;
+            box-shadow: 3px 3px 0px 0px #000000;
+            /* Smaller */
+            text-transform: uppercase;
+            font-weight: 800;
+            transition: all 0.2s;
+            border-radius: 8px;
+            /* Rounded */
+        }
+
+        .brutal-btn:hover {
+            background: #cc0029;
+            transform: translate(-1px, -1px);
+            box-shadow: 5px 5px 0px 0px #000000;
+        }
+
+        .brutal-btn:active {
+            transform: translate(1px, 1px);
+            box-shadow: 2px 2px 0px 0px #000000;
+        }
+
+        .brutal-input {
+            background: #ffffff;
+            border: 3px solid #000000;
+            padding: 0.75rem;
+            font-family: 'Courier New', Courier, monospace;
+            box-shadow: 3px 3px 0px 0px #cccccc;
+            border-radius: 8px;
+        }
+
+        .brutal-input:focus {
+            outline: none;
+            box-shadow: 5px 5px 0px 0px #000000;
+        }
+
+        .grid-img {
+            border: 3px solid black;
+            box-shadow: 4px 4px 0px 0px black;
+            border-radius: 16px;
+            /* Rounded thumbnails */
+        }
+    </style>
+</head>
+
+<body class="h-screen flex overflow-hidden">
+
+    <!-- Sidebar History -->
+    <aside class="w-80 bg-white border-r-4 border-black flex flex-col z-20 hidden md:flex">
+        <div class="p-6 border-b-4 border-black bg-yellow-300">
+            <h1 class="text-4xl font-extrabold tracking-tighter text-black uppercase">EXPLICIT</h1>
+            <div class="text-xs font-bold mt-2 flex justify-between items-center border-t-2 border-black pt-2">
+                <span class="bg-black text-white px-1">UNCENSORED ENGINE</span>
+                <span id="connection-status" class="uppercase text-red-600 animate-pulse">Connecting...</span>
+            </div>
+            <div id="credits-box" class="mt-4 border-2 border-black p-2 bg-white text-xs font-mono hidden">
+                CREDITS: <span id="credits-val" class="font-bold text-lg">---</span>
+            </div>
+        </div>
+
+        <div class="flex-1 overflow-y-auto p-4 space-y-3 scroll-hide" id="history-list">
+            <!-- History Items will populate here -->
+            <div class="text-center text-slate-500 text-sm py-10">Loading history...</div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col relative bg-[#e0e0e0]">
+
+        <!-- Header / Controls -->
+        <!-- Reduced padding p-4 -->
+        <header class="p-4 flex flex-col gap-4 z-10">
+
+            <div class="max-w-4xl w-full mx-auto"> <!-- Reduced max-width -->
+                <div class="brutal-box p-3 relative group bg-white">
+
+                    <div
+                        class="absolute -top-4 left-0 bg-black text-white px-2 py-0.5 font-bold text-xs tracking-widest uppercase transform -rotate-1 rounded">
+                        Uncensored Hub
+                    </div>
+
+                    <!-- Voice Input Button (Compact) -->
+                    <button onclick="startVoiceReset()" id="voice-btn"
+                        class="absolute top-2 right-2 bg-gray-100 border-2 border-black p-1 hover:bg-gray-200 z-20 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] rounded-md"
+                        title="Voice Dictation">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-black" fill="none"
+                            viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                        </svg>
+                    </button>
+
+                    <div class="relative mt-2">
+                        <!-- Scale down textarea -->
+                        <textarea id="prompt-input"
+                            class="w-full bg-white text-lg text-black font-bold p-3 outline-none resize-none h-24 placeholder-gray-400 border-2 border-dashed border-black rounded-lg"
+                            placeholder="TYPE WHAT YOU WANT TO SEE..."></textarea>
+
+                        <!-- Control Station (Always Open, simplified layout) -->
+                        <div id="control-station"
+                            class="border-t-2 border-black pt-3 mt-3 flex flex-wrap gap-4 items-center justify-between">
+
+                            <!-- Sliders in a compact row -->
+                            <div class="flex gap-4 flex-1 items-center">
+                                <div class="flex flex-col w-32">
+                                    <div class="flex justify-between text-[10px] font-bold uppercase">
+                                        <label>Steps</label>
+                                        <span id="steps-val">25</span>
+                                    </div>
+                                    <input type="range" id="steps-range" min="10" max="100" value="25"
+                                        class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer border border-black accent-red-600">
+                                </div>
+                                <div class="flex flex-col w-32">
+                                    <div class="flex justify-between text-[10px] font-bold uppercase">
+                                        <label>Guidance</label>
+                                        <span id="guidance-val">7.5</span>
+                                    </div>
+                                    <input type="range" id="guidance-range" min="1" max="20" step="0.5" value="7.5"
+                                        class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer border border-black accent-red-600">
+                                </div>
+
+                                <!-- Safety Toggle Compact -->
+                                <button onclick="toggleSafety()" id="safety-btn"
+                                    class="text-[10px] px-2 py-1 font-bold border-2 border-black bg-red-500 text-white uppercase rounded shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[1px] hover:shadow-none transition-all ml-auto">
+                                    uncensored
+                                </button>
+                            </div>
+
+                        </div>
+
+                        <div class="flex justify-between items-end mt-3 pt-3 border-t-2 border-black">
+                            <select id="provider-select"
+                                class="bg-gray-700 text-white border border-gray-600 rounded px-2 py-1 text-sm focus:outline-none focus:border-blue-500 transition-colors">
+                                <option value="runpod" selected>RunPod (Uncensored)</option>
+                                <option value="fal">Fal.ai (Fast)</option>
+                            </select>
+
+                            <button onclick="generate()" id="generate-btn"
+                                class="brutal-btn px-6 py-2 text-sm flex items-center gap-2 rounded-lg">
+                                <span>GENERATE</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20"
+                                    fill="currentColor">
+                                    <path fill-rule="evenodd"
+                                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13a1 1 0 102 0V9.414l1.293 1.293a1 1 0 001.414-1.414z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Active Jobs Area -->
+                <div id="active-jobs" class="mt-2 flex flex-wrap gap-2 min-h-[1rem]">
+                </div>
+            </div>
+        </header>
+
+        <!-- Gallery Grid -->
+        <div class="flex-1 overflow-y-auto p-6 md:p-10 z-0 scroll-hide">
+            <div id="gallery-grid"
+                class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 max-w-[1600px] mx-auto pb-20">
+                <!-- Gallery Images -->
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Load PocketBase from jsDelivr (more robust) -->
+    <script src="https://cdn.jsdelivr.net/npm/pocketbase/dist/pocketbase.umd.js"></script>
+
+    <script>
+        // Global Error Handler to catch Script Load failures
+        window.onerror = function (msg, url, line) {
+            const statusEl = document.getElementById('connection-status');
+            if (statusEl) {
+                statusEl.classList.remove('text-red-600', 'animate-pulse', 'text-green-500');
+                statusEl.classList.add('text-red-600');
+                statusEl.textContent = 'Script Error: ' + msg;
+            }
+            return false;
+        };
+
+        // Check if PocketBase loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof PocketBase === 'undefined') {
+                const statusEl = document.getElementById('connection-status');
+                if (statusEl) {
+                    statusEl.classList.remove('text-red-600', 'animate-pulse');
+                    statusEl.classList.add('text-red-600');
+                    statusEl.textContent = 'Error: PocketBase SDK Failed to Load via CDN';
+                }
+            }
+        });
+    </script>
+
+    <script>
+        // Use the remote Fly.io DB
+        const PB_URL = 'https://uncensored-engine-db.fly.dev';
+        let pb;
+
+        try {
+            pb = new PocketBase(PB_URL);
+            pb.autoCancellation(false);
+        } catch (e) {
+            console.error("PB Init Error", e);
+        }
+
+        // Global state
+        let currentProvider = 'runpod'; // 'fal' or 'runpod'
+        let guestId = localStorage.getItem('guest_id') || 'guest_' + Math.random().toString(36).substr(2, 9);
+        localStorage.setItem('guest_id', guestId);
+        let activeJobIds = new Set();
+        let pollInterval;
+
+        // Init
+        async function init() {
+            try {
+                // Anonymous Auth for Demo (or Admin login if needed later)
+                // For now, assume public read/write on 'jobs' collection is enabled
+                // OR authenticate as a demo user automatically
+
+                // Check health by listing jobs (limit 1)
+                await pb.collection('jobs').getList(1, 1);
+
+                // Success
+                const statusEl = document.getElementById('connection-status');
+                statusEl.classList.remove('text-red-600', 'animate-pulse');
+                statusEl.classList.add('text-green-600');
+                statusEl.textContent = 'Live (Uncensored DB)';
+
+                fetchGallery();
+                updateBalance();
+                startGlobalPoller();
+
+            } catch (e) {
+                console.error("Init check failed:", e);
+
+                // Inspect Error
+                // status 0 usually means Network Error or CORS
+                // status 404 means 'jobs' collection might be empty or missing (but DB reachable)
+                if (e.status === 404) {
+                    console.warn("Jobs collection not found or empty, but connected.");
+                    document.getElementById('connection-status').classList.remove('text-red-600', 'animate-pulse');
+                    document.getElementById('connection-status').classList.add('text-green-600');
+                    document.getElementById('connection-status').textContent = 'Live (Empty DB)';
+                    startGlobalPoller(); // Start anyway
+                } else {
+                    // Real connection error
+                    const statusEl = document.getElementById('connection-status');
+                    statusEl.classList.remove('text-green-600');
+                    statusEl.classList.add('text-red-600', 'animate-pulse');
+                    document.getElementById('connection-status').textContent = 'Offline (' + (e.message || 'Network') + ')';
+                }
+            }
+        }
+
+        // State for controls
+        let safetyEnabled = false; // Default OFF as requested
+        let controlsOpen = false;
+
+        // --- Controls Logic ---
+        window.toggleControls = () => {
+            controlsOpen = !controlsOpen;
+            const panel = document.getElementById('control-station');
+            if (controlsOpen) panel.classList.remove('hidden');
+            else panel.classList.add('hidden');
+        };
+
+        window.toggleSafety = () => {
+            safetyEnabled = !safetyEnabled;
+            const btn = document.getElementById('safety-btn');
+            if (safetyEnabled) {
+                btn.textContent = "ON (Safe)";
+                btn.classList.remove('text-red-400', 'border-red-500/50');
+                btn.classList.add('text-green-400', 'border-green-500/50');
+            } else {
+                btn.textContent = "OFF (Uncensored)";
+                btn.classList.remove('text-green-400', 'border-green-500/50');
+                btn.classList.add('text-red-400', 'border-red-500/50');
+            }
+        };
+
+        // Update slider values
+        document.getElementById('steps-range').addEventListener('input', (e) => {
+            document.getElementById('steps-val').textContent = e.target.value;
+        });
+        document.getElementById('guidance-range').addEventListener('input', (e) => {
+            document.getElementById('guidance-val').textContent = e.target.value;
+        });
+
+        // Update balance logic
+        async function updateBalance() {
+            try {
+                // Show box
+                document.getElementById('credits-box').classList.remove('hidden');
+
+                const userId = localStorage.getItem('guest_id');
+                const data = {
+                    type: 'check_balance',
+                    params: {},
+                    user_id: userId,
+                    status: 'queued'
+                };
+
+                const job = await pb.collection('jobs').create(data);
+
+                // Poll for result
+                let attempts = 0;
+                const balInterval = setInterval(async () => {
+                    attempts++;
+                    if (attempts > 20) clearInterval(balInterval);
+                    try {
+                        const res = await pb.collection('jobs').getOne(job.id);
+                        if (res.status === 'completed' && res.result) {
+                            clearInterval(balInterval);
+                            const val = res.result.balance || "ACTIVE";
+                            document.getElementById('credits-val').textContent = val;
+                        }
+                    } catch (e) { }
+                }, 1000);
+
+            } catch (e) { console.warn("Balance check fail", e); }
+        }
+
+        // --- Voice Logic (Web Speech API) ---
+        window.startVoiceReset = () => {
+            if (!('webkitSpeechRecognition' in window)) {
+                return alert("Voice dictation not supported in this browser. Try Chrome.");
+            }
+            const recognition = new webkitSpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = false;
+            recognition.lang = 'en-US';
+
+            const btn = document.getElementById('voice-btn');
+            btn.classList.add('text-red-500', 'animate-pulse');
+
+            recognition.onresult = (event) => {
+                const text = event.results[0][0].transcript;
+                const input = document.getElementById('prompt-input');
+                // Append if text exists, else replace
+                input.value = input.value ? input.value + " " + text : text;
+                btn.classList.remove('text-red-500', 'animate-pulse');
+            };
+
+            recognition.onerror = () => {
+                btn.classList.remove('text-red-500', 'animate-pulse');
+            };
+
+            recognition.onend = () => {
+                btn.classList.remove('text-red-500', 'animate-pulse');
+            };
+
+            recognition.start();
+        };
+
+
+        // --- Generation Logic ---
+        window.generate = async () => {
+            const promptInput = document.getElementById('prompt-input');
+            const prompt = promptInput.value.trim();
+            if (!prompt) return;
+
+            const provider = document.getElementById('provider-select').value;
+            const btn = document.getElementById('generate-btn');
+
+            // Collect advanced params
+            const steps = parseInt(document.getElementById('steps-range').value);
+            const guidance = parseFloat(document.getElementById('guidance-range').value);
+
+            // UI Feedback
+            promptInput.value = '';
+            btn.classList.add('opacity-50', 'cursor-wait');
+
+            try {
+                // Ensure we have a user ID (or create a guest one locally)
+                const userId = 'guest-user-' + Math.random().toString(36).substr(2, 9);
+
+                const data = {
+                    type: 'image_generation',
+                    params: {
+                        prompt,
+                        provider,
+                        num_inference_steps: steps,
+                        guidance_scale: guidance,
+                        enable_safety_checker: safetyEnabled
+                    },
+                    user_id: userId,
+                    status: 'queued'
+                };
+
+                const job = await pb.collection('jobs').create(data);
+
+                // Add to active set
+                addActiveJob(job);
+
+            } catch (err) {
+                alert("Creation failed: " + err.message);
+            } finally {
+                btn.classList.remove('opacity-50', 'cursor-wait');
+            }
+        };
+
+        function addActiveJob(job) {
+            activeJobIds.add(job.id);
+            renderActiveJobs();
+        }
+
+        function renderActiveJobs() {
+            const container = document.getElementById('active-jobs');
+            if (activeJobIds.size === 0) {
+                container.innerHTML = '';
+                return;
+            }
+
+            container.innerHTML = Array.from(activeJobIds).map(id => `
+                <div class="bg-glass border border-glassBorder rounded-full px-4 py-1 text-xs text-blue-300 flex items-center gap-2 animate-pulse">
+                    <svg class="animate-spin h-3 w-3 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Processing Job...
+                </div>
+            `).join('');
+        }
+
+        async function startGlobalPoller() {
+            // Poll for all active jobs and general gallery updates every 3s
+            setInterval(async () => {
+                await fetchGallery(); // This acts as our "state refresh"
+            }, 3000);
+        }
+
+        async function fetchGallery() {
+            try {
+                // Fetch latest 30 jobs
+                // PocketBase uses 'created' for sort. '-created' means descending.
+                // expand='job_artifacts' is not needed if we store artifacts inside the job or fetch separately.
+                // For simplicity in this migration, let's assume artifacts are part of the 'jobs' record 
+                // OR we fetch them. 
+                // Actually, PB supports relations. expand='job_artifacts'. 
+
+                const result = await pb.collection('jobs').getList(1, 30, {
+                    sort: '-created',
+                    filter: 'type = "image_generation"',
+                    expand: 'job_artifacts_via_job_id' // Reverse relation name? Or we store 'artifacts' JSON?
+                    // Strategy: Store artifacts as JSON in the job record for simplicity now.
+                });
+
+                const jobs = result.items;
+
+                // Update active set based on status
+                const serverActiveIds = new Set();
+                jobs.forEach(job => {
+                    if (['queued', 'processing', 'in_progress'].includes(job.status)) {
+                        serverActiveIds.add(job.id);
+                        activeJobIds.add(job.id);
+                    } else {
+                        activeJobIds.delete(job.id);
+                    }
+                });
+                renderActiveJobs();
+                renderGallery(jobs);
+                renderHistory(jobs);
+
+            } catch (e) {
+                console.warn("Poll clean (or DB setup needed)", e);
+            }
+        }
+
+        function renderGallery(jobs) {
+            const grid = document.getElementById('gallery-grid');
+
+            // Filter valid items
+            // Sort by created DESC (newest first) which is default from fetchGallery
+            const validItems = jobs.filter(j =>
+                (j.status === 'completed' || j.status === 'complete') &&
+                ((j.expand && j.expand.job_artifacts_via_job_id) || (j.result && j.result.images))
+            );
+
+            // Get existing IDs to avoid re-render
+            const existingIds = new Set(Array.from(grid.children).map(c => c.dataset.id));
+
+            // Iterate through valid items. 
+            // If item exists, do nothing (or update if needed, but usually static).
+            // If item does NOT exist, create it.
+            // Since we want Newest first, and validItems is Newest->Oldest:
+            // We can just Append children in order if grid is empty.
+            // If grid has content, we must allow for "Prepending" new items that came in.
+
+            // Simplest logic for "Smooth":
+            // 1. Identify new items.
+            // 2. Prepend them to the grid in reverse order (oldest new -> newest new) so they stack correctly at top?
+            //    No, if validItems is [New1, New2, Old1, Old2], and grid has [Old1, Old2].
+            //    We see New1 is not there. New2 is not there.
+            //    We should insert New2 before Old1. Then New1 before New2.
+
+            // Let's use `insertBefore` logic.
+
+            // Convert to array for index access
+            const currentChildren = Array.from(grid.children);
+
+            validItems.forEach((job, index) => {
+                // Check if it exists ANYWHERE in grid
+                if (existingIds.has(job.id)) {
+                    // Optimally, check order? Ignored for MVP speed.
+                    return;
+                }
+
+                // Create Element
+                let imageUrl = '';
+                if (job.expand && job.expand.job_artifacts_via_job_id) {
+                    const art = job.expand.job_artifacts_via_job_id.find(a => a.type === 'image_png');
+                    if (art) imageUrl = art.url;
+                }
+                if (!imageUrl && job.result && job.result.images && job.result.images.length > 0) {
+                    imageUrl = job.result.images[0].url;
+                }
+                if (!imageUrl) return;
+
+                const el = document.createElement('div');
+                el.dataset.id = job.id;
+                el.className = "brutal-box p-2 group relative aspect-square bg-white rounded-xl overflow-hidden";
+                el.innerHTML = `
+                    <div class="w-full h-full relative">
+                        <img src="${imageUrl}" 
+                             alt="${job.params.prompt}" 
+                             class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-300 rounded-lg"
+                             loading="lazy" />
+                        
+                        <div class="absolute inset-0 border-2 border-black opacity-0 group-hover:opacity-100 pointer-events-none z-10 rounded-lg"></div>
+                        
+                        <div class="absolute bottom-0 left-0 right-0 bg-black text-white p-2 opacity-0 group-hover:opacity-100 transition-opacity flex justify-between items-center z-20">
+                            <span class="text-[10px] font-bold uppercase truncate max-w-[70%]">${job.params.prompt}</span>
+                            <a href="${imageUrl}" target="_blank" class="hover:text-red-500">
+                                ↘
+                            </a>
+                        </div>
+                    </div>
+                 `;
+
+                // Insert logic:
+                // "index" is where this item supposedly belongs in the master list.
+                // So we try to insert it before the element currently at that index.
+
+                const referenceNode = grid.children[index];
+                if (referenceNode) {
+                    grid.insertBefore(el, referenceNode);
+                } else {
+                    grid.appendChild(el);
+                }
+            });
+        }
+
+        function renderHistory(jobs) {
+            const list = document.getElementById('history-list');
+            list.innerHTML = jobs.map(job => {
+                let statusColor = 'text-gray-500';
+                if (['queued', 'processing'].includes(job.status)) statusColor = 'text-yellow-600 animate-pulse';
+                if (job.status === 'completed' || job.status === 'complete') statusColor = 'text-green-600';
+                if (job.status === 'failed' || job.status === 'error') statusColor = 'text-red-600';
+
+                return `
+                <div class="p-2 border-b-2 border-black hover:bg-black hover:text-white transition-colors cursor-default group">
+                    <div class="flex justify-between items-start mb-1">
+                        <span class="text-[10px] font-mono group-hover:text-white">#${job.id.slice(0, 4)}</span>
+                        <span class="text-[10px] font-black uppercase ${statusColor} bg-white px-1 border border-black">${job.status}</span>
+                    </div>
+                    <p class="text-xs font-bold uppercase truncate">${job.params.prompt}</p>
+                </div>
+                `;
+            }).join('');
+        }
+
+        // Start
+        init();
+
+    </script>
+</body>
+
+</html>

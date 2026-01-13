@@ -84,8 +84,8 @@ class ZImageWorker(BaseWorker):
         
         # Use the working endpoint we found, or default
         if not self.endpoint_id:
-            # Use the endpoint we found in the test
-            self.endpoint_id = "4znje87s0eaktv"  # z-official-sdxl-16
+            # Use the ComfyUI multi-model endpoint
+            self.endpoint_id = "4e7784vway3niq"  # ComfyUI Multi-Model Endpoint
             print(f"⚠️  Using default endpoint: {self.endpoint_id}")
         
         if not self.runpod_api_key:
@@ -166,7 +166,9 @@ class ZImageWorker(BaseWorker):
         """
         Process an image generation task using selected provider.
         """
-        input_data = task.get('input', {})
+        
+        
+        input_data = task.get('input', {}) or task.get('params', {})
         provider = input_data.get('provider', 'runpod')  # Default to runpod
         
         print(f"🎨 Processing image task: {task.get('id')} with provider: {provider}")
@@ -180,16 +182,24 @@ class ZImageWorker(BaseWorker):
         if provider == 'fal':
             return await self.generate_with_fal(task, input_data)
         elif provider == 'comfyui':
+            # Local ComfyUI instance
             return await self.generate_with_comfyui(task, input_data)
         else:
-            # Get endpoint for the specific model
+            # ALL RunPod models use ComfyUI pipeline
+            # ComfyUI is the engine, models are checkpoints loaded inside it
             model_id = input_data.get('model_id', 'pony-v6')
             target_endpoint = input_data.get('endpoint_id') or self.get_endpoint_for_model(model_id)
+            
+            
+
             
             if not target_endpoint:
                 return {'success': False, 'error': f'No endpoint configured for model {model_id}'}
             
-            return await self.generate_with_runpod(task, input_data, target_endpoint)
+            # All RunPod requests use ComfyUI worker (handler_multi.py)
+            # The worker loads the correct model checkpoint based on model_id
+            result = await self.generate_with_runpod(task, input_data, target_endpoint)
+            return result
 
     async def generate_with_fal(self, task: dict, input_data: dict) -> dict:
         """Generate image using Fal.ai endpoint"""
@@ -349,8 +359,13 @@ class ZImageWorker(BaseWorker):
 
     async def generate_with_runpod(self, task: dict, input_data: dict, endpoint_id: str = None) -> dict:
         """Generate image using RunPod endpoint"""
+        
+
+        
         eid = endpoint_id or self.endpoint_id
         if not eid:
+            
+
             return {'success': False, 'error': 'RunPod endpoint not configured'}
             
         # Extract advanced parameters
@@ -387,7 +402,7 @@ class ZImageWorker(BaseWorker):
             # Standard SDXL/SD Payload
             
             # CHECK HEALER OVERRIDES
-            model_id = input_data.get('model_id')
+            model_id = input_data.get('model_id', 'pony-v6')
             overrides = self.healer.get_overrides(model_id)
             
             width = overrides.get('width', input_data.get('width', 1024))
@@ -400,15 +415,30 @@ class ZImageWorker(BaseWorker):
                 if req_steps < steps:
                     print(f"⚠️ HEALER: Capping steps for {model_id} to {req_steps}")
 
+            # Payload for ComfyUI worker (handler_multi.py)
+            # ALL parameters map to ComfyUI nodes:
+            # - prompt → CLIPTextEncode node (positive)
+            # - negative_prompt → CLIPTextEncode node (negative)
+            # - width/height → EmptyLatentImage node
+            # - num_inference_steps → KSampler node (steps)
+            # - guidance_scale → KSampler node (cfg)
+            # - model_id → CheckpointLoaderSimple node (loads checkpoint)
+            # - seed → KSampler node
+            # - sampler_name → KSampler node
+            # - scheduler → KSampler node
             payload = {
                 "input": {
-                    "prompt": prompt,
-                    "width": width,
-                    "height": height,
-                    "num_inference_steps": req_steps,
-                    "guidance_scale": guidance,
-                    "num_images": 1,
-                    "model_id": model_id
+                    "prompt": prompt,                                    # → CLIPTextEncode node
+                    "negative_prompt": input_data.get('negative_prompt', 'bad quality, blurry'),  # → CLIPTextEncode node
+                    "width": width,                                      # → EmptyLatentImage node
+                    "height": height,                                    # → EmptyLatentImage node
+                    "num_inference_steps": req_steps,                   # → KSampler node (steps)
+                    "guidance_scale": guidance,                          # → KSampler node (cfg)
+                    "model_id": model_id,                                # → CheckpointLoaderSimple node (loads checkpoint)
+                    "seed": input_data.get('seed', random.randint(1, 999999999)),  # → KSampler node
+                    "sampler_name": input_data.get('sampler_name', 'euler_ancestral'),  # → KSampler node
+                    "scheduler": input_data.get('scheduler', 'normal'),  # → KSampler node
+                    "denoise": input_data.get('denoise', 1.0)            # → KSampler node
                 }
             }
         
@@ -417,12 +447,20 @@ class ZImageWorker(BaseWorker):
              payload["input"]["image_url"] = input_data['image_url']
              
         print(f"DEBUG: Sending payload to RunPod: {payload}")
+        
+        
+
 
         try:
             endpoint = runpod.Endpoint(eid)
             
             # 1. Trigger Run (Async)
+            
+
             run_request = endpoint.run(payload)
+            
+            
+
             
             # Handle response type safely to get ID
             job_id_runpod = None
@@ -430,25 +468,36 @@ class ZImageWorker(BaseWorker):
                 job_id_runpod = run_request.get('id')
             else:
                 job_id_runpod = getattr(run_request, 'job_id', getattr(run_request, 'id', None))
+            
+            
+
                 
             if not job_id_runpod:
-                 return {'success': False, 'error': f"Failed to get RunPod Job ID. Resp: {run_request}"}
+                
 
-            print(f"⏳ Polling RunPod Job: {job_id_runpod} on endpoint {eid} (Timeout: 60s)")
+                return {'success': False, 'error': f"Failed to get RunPod Job ID. Resp: {run_request}"}
+
+            print(f"⏳ Polling RunPod Job: {job_id_runpod} on endpoint {eid} (Timeout: 300s)")
 
             # 2. Poll using Raw REST API
             url = f"https://api.runpod.ai/v2/{eid}/status/{job_id_runpod}"
             headers = {"Authorization": f"Bearer {self.runpod_api_key}"}
             
             total_wait = 0
-            max_wait = 60  # 1 minute timeout 
+            max_wait = 1800  # 30 minute timeout - just need to prove it works
+            
+
             
             output_data = {}
             
             while True:
                 try:
+                    
+
                     r = requests.get(url, headers=headers)
                     r_data = r.json()
+                    
+
                 except Exception as e:
                     print(f"Warning: Poll failed: {e}")
                     await asyncio.sleep(2)
@@ -459,27 +508,38 @@ class ZImageWorker(BaseWorker):
                 
                 if status == 'COMPLETED':
                     output_data = r_data.get('output', {})
+                    
+
                     print(f"✅ RunPod Completed! Output Keys: {list(output_data.keys())}")
                     break
                 elif status in ['FAILED', 'CANCELLED', 'TIMED_OUT']:
-                     raw_err = r_data.get('error', status)
-                     self._log_stuck_job(job_id_runpod, status, total_wait, prompt, eid, raw_err)
-                     if "balance" in str(raw_err).lower() or "credits" in str(raw_err).lower():
-                         return {'success': False, 'error': f"Insufficient balance on RunPod."}
-                     return {'success': False, 'error': f"RunPod failed: {raw_err}"}
+                    
+
+                    raw_err = r_data.get('error', status)
+                    self._log_stuck_job(job_id_runpod, status, total_wait, prompt, eid, raw_err)
+                    if "balance" in str(raw_err).lower() or "credits" in str(raw_err).lower():
+                        return {'success': False, 'error': f"Insufficient balance on RunPod."}
+                    return {'success': False, 'error': f"RunPod failed: {raw_err}"}
                 
                 if total_wait > max_wait:
-                    self._log_stuck_job(job_id_runpod, 'TIMEOUT', total_wait, prompt, eid, 'Timeout after 60 seconds')
-                    print(f"❌ TIMEOUT: RunPod endpoint {eid} exceeded 60 second limit.")
-                    return {'success': False, 'error': f"Image generation timed out after 60 seconds. The model may be too slow or the endpoint may need optimization. Try a faster model or reduce image resolution."}
+                    
+
+                    self._log_stuck_job(job_id_runpod, 'TIMEOUT', total_wait, prompt, eid, 'Timeout after 300 seconds')
+                    print(f"❌ TIMEOUT: RunPod endpoint {eid} exceeded 300 second limit.")
+                    return {'success': False, 'error': f"Image generation timed out after 300 seconds. The model may be too slow or the endpoint may need optimization. Try a faster model or reduce image resolution."}
                     
                 await asyncio.sleep(2)
                 total_wait += 2
                 if total_wait % 20 == 0:
                     ts = datetime.utcnow().isoformat()
-                    print(f"⏳ [{ts}] Job {job_id_runpod[:8]}... | Status: {status} | Wait: {total_wait}s | Workers: {self._get_worker_count(eid)}")
+                    worker_status = self._get_worker_count(eid)
+                    
+
+                    print(f"⏳ [{ts}] Job {job_id_runpod[:8]}... | Status: {status} | Wait: {total_wait}s | Workers: {worker_status}")
 
             # Decode image
+            
+
             img_b64 = output_data.get('image_base64') or output_data.get('audio_base64')
             
             # Check for standard RunPod "images" list
@@ -515,10 +575,22 @@ class ZImageWorker(BaseWorker):
                         print(f"❌ Error downloading image: {e}")
 
             if not img_b64:
-                 return {'success': False, 'error': f'No image data returned. Data: {output_data}'}
-                 
-            img_bytes = base64.b64decode(img_b64)
+                
+
+                return {'success': False, 'error': f'No image data returned. Data: {output_data}'}
             
+            
+
+            try:
+                img_bytes = base64.b64decode(img_b64)
+                
+
+            except Exception as e:
+                
+
+                return {'success': False, 'error': f'Failed to decode base64 image: {str(e)}'}
+            
+
             return {
                 'success': True,
                 'output': {
@@ -537,10 +609,11 @@ class ZImageWorker(BaseWorker):
             }
 
         except Exception as e:
+            
+
             # REPORT FAILURE TO HEALER
             self.healer.report_failure(input_data.get('model_id', 'unknown'), str(e))
             return {'success': False, 'error': str(e)}
-
     async def check_balance(self, task: dict) -> dict:
         """Check balance for providers."""
         try:

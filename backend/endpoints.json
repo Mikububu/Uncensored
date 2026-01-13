@@ -1,17 +1,8 @@
 {
-  "pony-v6": {
-    "name": "Pony Diffusion V6",
+  "default": {
+    "name": "ComfyUI Multi-Model Endpoint",
     "template_id": "uvfexb61ca",
-    "endpoint_id": "4e7784vway3niq"
-  },
-  "abyssorangemix3": {
-    "name": "AbyssOrangeMix V3",
-    "template_id": "yjq23nnuv9",
-    "endpoint_id": "fehw5gl26qnnu4"
-  },
-  "realistic-vision-v5": {
-    "name": "Realistic Vision V5",
-    "template_id": "t8oyo3azu4",
-    "endpoint_id": "obmmh7nyfl7i4m"
+    "endpoint_id": "4e7784vway3niq",
+    "note": "Single endpoint that handles ALL models via ComfyUI"
   }
 }

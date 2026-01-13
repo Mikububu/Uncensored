@@ -18,20 +18,26 @@ sys.path.append('/comfyui')
 
 # Import ComfyUI modules
 try:
+    print("🔧 Loading ComfyUI modules...")
     from nodes import NODE_CLASS_MAPPINGS
     from comfy import model_management
+    print("✅ ComfyUI modules loaded successfully")
 except ImportError as e:
     print(f"❌ ComfyUI import error: {e}")
-    print("Make sure ComfyUI is installed in /comfyui")
+    print(f"   sys.path: {sys.path}")
+    print(f"   /comfyui exists: {os.path.exists('/comfyui')}")
+    print(f"   /comfyui contents: {os.listdir('/comfyui') if os.path.exists('/comfyui') else 'N/A'}")
     raise
 
 # Initialize ComfyUI nodes
+print("🔧 Initializing ComfyUI nodes...")
 CheckpointLoaderSimple = NODE_CLASS_MAPPINGS["CheckpointLoaderSimple"]()
 CLIPTextEncode = NODE_CLASS_MAPPINGS["CLIPTextEncode"]()
 KSampler = NODE_CLASS_MAPPINGS["KSampler"]()
 VAEDecode = NODE_CLASS_MAPPINGS["VAEDecode"]()
 EmptyLatentImage = NODE_CLASS_MAPPINGS["EmptyLatentImage"]()
 SaveImage = NODE_CLASS_MAPPINGS["SaveImage"]()
+print("✅ ComfyUI nodes initialized")
 
 # Global model cache (checkpoint name -> loaded model)
 model_cache = {}
@@ -168,18 +174,24 @@ def generate_image(job):
         # Create latent image
         latent = EmptyLatentImage.generate(width=width, height=height, batch_size=1)[0]
         
-        # Sample
+        # Get sampler settings from input (all ComfyUI node parameters)
+        sampler_name = job_input.get("sampler_name", "euler_ancestral")
+        scheduler = job_input.get("scheduler", "normal")
+        denoise = float(job_input.get("denoise", 1.0))
+        
+        # Sample using ComfyUI KSampler node
+        # All parameters are ComfyUI node inputs
         samples = KSampler.sample(
-            model=model,
-            seed=seed,
-            steps=steps,
-            cfg=cfg,
-            sampler_name="euler_ancestral",
-            scheduler="normal",
-            positive=positive_cond,
-            negative=negative_cond,
-            latent_image=latent,
-            denoise=1.0
+            model=model,                    # From CheckpointLoaderSimple node
+            seed=seed,                      # KSampler node input
+            steps=steps,                    # KSampler node input
+            cfg=cfg,                        # KSampler node input (guidance_scale)
+            sampler_name=sampler_name,      # KSampler node input
+            scheduler=scheduler,            # KSampler node input
+            positive=positive_cond,         # From CLIPTextEncode node
+            negative=negative_cond,         # From CLIPTextEncode node
+            latent_image=latent,            # From EmptyLatentImage node
+            denoise=denoise                 # KSampler node input
         )[0]
         
         # Decode

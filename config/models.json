@@ -7,6 +7,7 @@
       "base_model": "SD 1.5",
       "huggingface_id": "PonyDiffusion/Pony-V6",
       "civitai_id": null,
+      "checkpoint_name": "ponyDiffusionV6XL_v6StartWithThisOne.safetensors",
       "recommended_steps": 25,
       "recommended_cfg": 7.5,
       "max_resolution": 1024,

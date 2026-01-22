@@ -38,6 +38,7 @@ class ZImageWorker(BaseWorker):
         self.runpod_api_key = None
         self.endpoint_id = None
         self.fal_api_key = None
+        self.openrouter_api_key = None
         
         # Priority 1: Try MCP project-secrets (if available in Cursor)
         try:
@@ -65,6 +66,7 @@ class ZImageWorker(BaseWorker):
                     self.runpod_api_key = keys.get('runpod')
                 self.endpoint_id = keys.get('runpod_endpoint') or self.endpoint_id
                 self.fal_api_key = keys.get('fal') or self.fal_api_key
+                self.openrouter_api_key = keys.get('openrouter') or self.openrouter_api_key
                 if keys.get('runpod'):
                     print("✅ Loaded API keys from Supabase")
         except Exception as e:
@@ -77,6 +79,8 @@ class ZImageWorker(BaseWorker):
             self.endpoint_id = os.getenv("RUNPOD_ENDPOINT_ID")
         if not self.fal_api_key:
             self.fal_api_key = os.getenv("FAL_KEY")
+        if not self.openrouter_api_key:
+            self.openrouter_api_key = os.getenv("OPENROUTER_API_KEY")
         
         # Final fallback: Use environment variable or fail
         if not self.runpod_api_key:
@@ -179,7 +183,9 @@ class ZImageWorker(BaseWorker):
         if task['type'] == 'audio_transcription':
              return await self.transcribe_audio(task, input_data)
 
-        if provider == 'fal':
+        if provider == 'openrouter':
+            return await self.generate_with_openrouter(task, input_data)
+        elif provider == 'fal':
             return await self.generate_with_fal(task, input_data)
         elif provider == 'comfyui':
             # Local ComfyUI instance
@@ -272,6 +278,96 @@ class ZImageWorker(BaseWorker):
             
             print(f"❌ Fal.ai error: {err_msg}")
             return {'success': False, 'error': f'Fal.ai error: {err_msg}'}
+
+    async def generate_with_openrouter(self, task: dict, input_data: dict) -> dict:
+        """Generate image using OpenRouter API with Flux/Gemini models"""
+        try:
+            if not self.openrouter_api_key:
+                return {'success': False, 'error': 'OpenRouter API key not configured. Please set OPENROUTER_API_KEY environment variable.'}
+            
+            prompt = input_data.get('prompt') or input_data.get('description') or "A beautiful scene"
+            width = int(input_data.get('width', 1024))
+            height = int(input_data.get('height', 1024))
+            model = input_data.get('model', 'black-forest-labs/flux.2-pro')
+            
+            print(f"🎨 Generating with OpenRouter: {prompt[:50]}... ({width}x{height})")
+            
+            response = requests.post(
+                "https://openrouter.ai/api/v1/chat/completions",
+                headers={
+                    "Authorization": f"Bearer {self.openrouter_api_key}",
+                    "Content-Type": "application/json",
+                    "HTTP-Referer": "https://uncensored-studio.fly.dev",
+                    "X-Title": "Uncensored Studio"
+                },
+                json={
+                    "model": model,
+                    "messages": [
+                        {
+                            "role": "user",
+                            "content": prompt
+                        }
+                    ],
+                    "modalities": ["image", "text"]
+                },
+                timeout=120
+            )
+            
+            response.raise_for_status()
+            data = response.json()
+            
+            if not data.get('choices') or len(data['choices']) == 0:
+                return {'success': False, 'error': 'No response from OpenRouter'}
+            
+            message = data['choices'][0].get('message', {})
+            images = message.get('images', [])
+            
+            if not images or len(images) == 0:
+                return {'success': False, 'error': 'No images in OpenRouter response'}
+            
+            image_data = images[0].get('image_url', {}).get('url')
+            
+            if not image_data:
+                return {'success': False, 'error': 'No image URL in OpenRouter response'}
+            
+            if image_data.startswith('data:'):
+                img_b64 = image_data.split(',')[1]
+            else:
+                print(f"⬇️ Downloading image from OpenRouter...")
+                img_response = requests.get(image_data, timeout=60)
+                if img_response.status_code != 200:
+                    return {'success': False, 'error': f'Failed to download image: {img_response.status_code}'}
+                img_b64 = base64.b64encode(img_response.content).decode('utf-8')
+            
+            print(f"✅ OpenRouter success!")
+            
+            return {
+                'success': True,
+                'output': {
+                    'prompt': prompt,
+                    'provider': 'openrouter'
+                },
+                'images': [{'url': f"data:image/png;base64,{img_b64}"}],
+                'artifacts': [
+                    {
+                        'type': 'image_png',
+                        'content_type': 'image/png',
+                        'filename': f"generated_{task.get('id')}.png",
+                        'metadata': {'width': width, 'height': height, 'provider': 'openrouter'}
+                    }
+                ]
+            }
+            
+        except requests.exceptions.HTTPError as e:
+            err_msg = str(e)
+            error_data = e.response.json() if e.response else {}
+            if error_data.get('error', {}).get('message'):
+                err_msg = error_data['error']['message']
+            print(f"❌ OpenRouter HTTP error: {err_msg}")
+            return {'success': False, 'error': f'OpenRouter error: {err_msg}'}
+        except Exception as e:
+            print(f"❌ OpenRouter error: {str(e)}")
+            return {'success': False, 'error': f'OpenRouter error: {str(e)}'}
 
     async def generate_with_comfyui(self, task: dict, input_data: dict) -> dict:
         """Generate image using local ComfyUI instance"""

@@ -692,11 +692,11 @@
         // Global state
         // Models with correct endpoint IDs (synced from backend/endpoints.json)
         const MODELS = {
+            'flux-schnell': { provider: 'openrouter', endpoint_id: null, name: '⚡ Flux 2 Pro (OpenRouter)', uncensored_level: 'high', model: 'black-forest-labs/flux.2-pro', recommended: true },
             'pony-v6': { provider: 'runpod', endpoint_id: '4e7784vway3niq', name: 'Pony Diffusion V6', uncensored_level: 'high' },
             'abyssorangemix3': { provider: 'runpod', endpoint_id: 'fehw5gl26qnnu4', name: 'AbyssOrangeMix V3', uncensored_level: 'very_high' },
             'realistic-vision-v5': { provider: 'runpod', endpoint_id: 'obmmh7nyfl7i4m', name: 'Realistic Vision V5', uncensored_level: 'high' },
             'flux-dev-uncensored': { provider: 'runpod', endpoint_id: '4znje87s0eaktv', name: 'Flux Dev Uncensored', uncensored_level: 'medium' },
-            'flux-schnell': { provider: 'openrouter', endpoint_id: null, name: '⚡ Flux 2 Pro (OpenRouter)', uncensored_level: 'high', model: 'black-forest-labs/flux.2-pro' },
             'sdxl-turbo-uncensored': { provider: 'runpod', endpoint_id: '4znje87s0eaktv', name: 'SDXL Turbo Uncensored', uncensored_level: 'medium' },
             'chilloutmix': { provider: 'runpod', endpoint_id: '4znje87s0eaktv', name: 'ChilloutMix', uncensored_level: 'very_high' },
             'deliberate-v3': { provider: 'runpod', endpoint_id: '4znje87s0eaktv', name: 'Deliberate V3', uncensored_level: 'high' },
@@ -856,6 +856,15 @@
                 pill.className = pillClasses;
                 pill.textContent = config.name;
                 
+                // Add recommended badge
+                if (config.recommended) {
+                    const badge = document.createElement('span');
+                    badge.className = 'absolute -top-1 -right-1 text-[8px] bg-green-600 text-white rounded-full px-1';
+                    badge.textContent = '★';
+                    badge.title = 'Recommended - Fastest & Most Reliable';
+                    pill.appendChild(badge);
+                }
+                
                 // Add status badge
                 if (status) {
                     const badge = document.createElement('span');
@@ -876,8 +885,13 @@
                     pill.appendChild(badge);
                 }
                 
-                // Default select first working model
-                if (modelId === 'pony-v6' || (status && status.status === 'working' && !container.querySelector('.selection-active'))) {
+                // Default select first working model (prefer recommended)
+                const hasRecommended = container.querySelector('[data-model="flux-schnell"]');
+                if (hasRecommended && modelId === 'flux-schnell') {
+                    pill.classList.add('bg-black', 'text-white', 'selection-active');
+                } else if (!hasRecommended && modelId === 'pony-v6') {
+                    pill.classList.add('bg-black', 'text-white', 'selection-active');
+                } else if (!container.querySelector('.selection-active')) {
                     pill.classList.add('bg-black', 'text-white', 'selection-active');
                 }
                 

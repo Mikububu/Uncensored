@@ -70,24 +70,10 @@
     </div>
 
     <script>
-        // Check API status
-        async function checkStatus() {
-            try {
-                const response = await fetch('/api/status');
-                const data = await response.json();
-                const statusDiv = document.getElementById('status');
-                
-                if (data.openrouter_configured) {
-                    statusDiv.innerHTML = `<span class="text-green-600">✅ OpenRouter Ready (${data.api_key_preview})</span>`;
-                } else {
-                    statusDiv.innerHTML = `<span class="text-red-600">❌ OpenRouter Not Configured</span>`;
-                }
-            } catch (e) {
-                document.getElementById('status').innerHTML = `<span class="text-red-600">❌ Server Error</span>`;
-            }
-        }
+        // OpenRouter API key (for demo - in production, this should be server-side)
+        const OPENROUTER_API_KEY = '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';
 
-        // Generate image
+        // Generate image directly with OpenRouter
         async function generateImage() {
             const prompt = document.getElementById('prompt').value.trim();
             const width = parseInt(document.getElementById('width').value);
@@ -113,33 +99,57 @@
             btn.classList.add('opacity-50');
 
             try {
-                const response = await fetch('/api/generate', {
-                    method: 'POST',
+                console.log('🎨 Generating with OpenRouter directly...');
+                
+                const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+                    method: "POST",
                     headers: {
-                        'Content-Type': 'application/json'
+                        "Authorization": `Bearer ${OPENROUTER_API_KEY}`,
+                        "Content-Type": "application/json",
+                        "HTTP-Referer": "https://aprils-spielzeugkasten.netlify.app",
+                        "X-Title": "Uncensored Studio"
                     },
                     body: JSON.stringify({
-                        prompt: prompt,
-                        width: width,
-                        height: height
+                        "model": "black-forest-labs/flux.2-pro",
+                        "messages": [{"role": "user", "content": prompt}],
+                        "modalities": ["image", "text"]
                     })
                 });
 
-                const data = await response.json();
-
-                if (data.success) {
-                    // Show result
-                    outputImage.src = `data:image/png;base64,${data.image_base64}`;
-                    resultInfo.innerHTML = `
-                        <strong>Provider:</strong> ${data.provider}<br>
-                        <strong>Model:</strong> ${data.model}<br>
-                        <strong>Size:</strong> ${width}x${height}
-                    `;
-                    result.classList.remove('hidden');
+                console.log('Response status:', response.status);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('Response data:', data);
+                    
+                    const images = data.choices?.[0]?.message?.images || [];
+                    
+                    if (images.length > 0) {
+                        const imageData = images[0].image_url?.url;
+                        
+                        if (imageData && imageData.startsWith('data:')) {
+                            // Show result
+                            outputImage.src = imageData;
+                            resultInfo.innerHTML = `
+                                <strong>Provider:</strong> OpenRouter<br>
+                                <strong>Model:</strong> Flux 2 Pro<br>
+                                <strong>Size:</strong> ${width}x${height}
+                            `;
+                            result.classList.remove('hidden');
+                            console.log('✅ Success! Image generated');
+                        } else {
+                            showError('No image data in response');
+                        }
+                    } else {
+                        showError('No images in response');
+                    }
                 } else {
-                    showError(data.error);
+                    const errorText = await response.text();
+                    console.error('Error response:', errorText);
+                    showError(`HTTP ${response.status}: ${errorText.substring(0, 200)}`);
                 }
             } catch (e) {
+                console.error('Network error:', e);
                 showError('Network error: ' + e.message);
             } finally {
                 // Reset button
@@ -167,8 +177,8 @@
             }
         });
 
-        // Check status on load
-        checkStatus();
+        // Show ready status
+        document.getElementById('status').innerHTML = `<span class="text-green-600">✅ OpenRouter Direct API Ready</span>`;
     </script>
 </body>
 </html>

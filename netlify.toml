@@ -1,0 +1,4 @@
+[build]
+  publish = "frontend"
+  functions = "netlify/functions"
+  command = "npm run build"

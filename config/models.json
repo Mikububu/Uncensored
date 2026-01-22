@@ -21,6 +21,22 @@
       ]
     },
     {
+      "id": "flux-schnell",
+      "name": "Flux 2 Pro (OpenRouter)",
+      "description": "Fast Flux model via OpenRouter API - uses chat completion with modalities",
+      "base_model": "Flux",
+      "provider": "openrouter",
+      "model_name": "black-forest-labs/flux.2-pro",
+      "recommended_steps": 4,
+      "recommended_cfg": 3.5,
+      "max_resolution": 1440,
+      "uncensored_level": "high",
+      "test_prompts": [
+        "nude woman, artistic, detailed",
+        "explicit content, high quality"
+      ]
+    },
+    {
       "id": "abyssorangemix3",
       "name": "AbyssOrangeMix V3",
       "description": "Popular uncensored anime-style model",

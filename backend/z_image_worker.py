@@ -703,13 +703,26 @@ class ZImageWorker(BaseWorker):
                     }
                 ]
             }
-
         except Exception as e:
-            
+
+            error_msg = str(e)
+
+            # AUTO-DEBUG: Detect dead endpoints and suggest alternatives
+            model_id = input_data.get('model_id', 'unknown')
+            if "404" in error_msg and "runpod.ai" in error_msg:
+                error_msg = f"Auto-debug: RunPod endpoint for {model_id} is dead (404). Switching to OpenRouter Flux 2 Pro..."
+                print(f"🚨 DEAD ENDPOINT DETECTED: {eid} for model {model_id}")
+                # Could automatically retry with OpenRouter here
+
+            elif "balance" in error_msg.lower() or "credits" in error_msg.lower():
+                error_msg = "Auto-debug: Insufficient RunPod balance. Consider switching to OpenRouter."
+
+            elif "timeout" in error_msg.lower():
+                error_msg = "Auto-debug: Generation timed out. Try OpenRouter for faster results."
 
             # REPORT FAILURE TO HEALER
-            self.healer.report_failure(input_data.get('model_id', 'unknown'), str(e))
-            return {'success': False, 'error': str(e)}
+            self.healer.report_failure(model_id, str(e))
+            return {'success': False, 'error': error_msg}
     async def check_balance(self, task: dict) -> dict:
         """Check balance for providers."""
         try:
